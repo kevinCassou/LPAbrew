@@ -166,41 +166,42 @@ def beamParam(iteration,S,species_name="electronfromion",printflag=True,saveflag
             rmssize_z =            2*math.sqrt(z2_moy) * onel * 1e6 # [micron]
             divergence_rms = math.sqrt( py2ovpx2 + pz2ovpx2 )
 
-        # print beam parameter
-        if printflag == True:
-            print ""
-            print "--------------------------------------------"
-            print ""
-            print "Read ",np.size(E)," particles"
-            print "Iteration = ",iteration
-            print "Simulation time = ",iteration*dt_adim*onel/c*1e15," fs"
-            print "E_mean = ",np.mean(E)*0.512," MeV"
-            print "2*DeltaE_rms / E_mean = ", np.std(E)/np.mean(E)*100 , " %."
-            print "Total charge = ", Q, " pC."
-            print "Emittance_y = ",emittancey," mm-mrad"
-            print "Emittance_z = ",emittancez," mm-mrad"
-            print ""
-            print "--------------------------------------------"
-            print ""
+            # print beam parameter
+            if printflag == True:
+                print ""
+                print "--------------------------------------------"
+                print ""
+                print "Read ",np.size(E)," particles"
+                print "Iteration = ",iteration
+                print "Simulation time = ",iteration*dt_adim*onel/c*1e15," fs"
+                print "E_mean = ",np.mean(E)*0.512," MeV"
+                print "2*DeltaE_rms / E_mean = ", np.std(E)/np.mean(E)*100 , " %."
+                print "Total charge = ", Q, " pC."
+                print "Emittance_y = ",emittancey," mm-mrad"
+                print "Emittance_z = ",emittancez," mm-mrad"
+                print ""
+                print "--------------------------------------------"
+                print ""            
 
-        # all data in one vector
-        vlist = [iteration,
-        iteration*dt_adim*onel/c*1e15,
-        np.mean(E)*0.512,
-        np.std(E)/np.mean(E)*100,
-        Q,
-        emittancey,
-        emittancez,
-        rmssize_longitudinal,
-        rmssize_y,
-        rmssize_z,
-        divergence_rms]
+            # beam paramater list for iteration timestep
+            vlist = [iteration,
+            iteration*dt_adim*onel/c*1e15,
+            np.mean(E)*0.512,
+            np.std(E)/np.mean(E)*100,
+            Q,
+            emittancey,
+            emittancez,
+            rmssize_longitudinal,
+            rmssize_y,
+            rmssize_z,
+            divergence_rms]
 
-        if saveflag == True:
-            print "data saved in cvs file"
-            vdata = np.array(vlist)
-            filename = 'smilei-data-it'+str(iteration)+'.csv'
-            filepath = homedirectory+'/'+filename
-            vdata.tofile(filepath,sep=',',format='%10.5f')
+            # save beam parameter in a file
+            #if saveflag == True:
+            #    print "data saved in cvs file"
+            #    vdata = np.array(vlist)
+            #    filename = 'smilei-data-it'+str(iteration)+'.csv'
+            #    filepath = homedirectory+'/'+filename
+            #    vdata.tofile(filepath,sep=',',format='%10.5f')
 
-        return vlist
+            return vlist
