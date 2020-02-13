@@ -36,8 +36,8 @@ hist_conversion_factor       = 1.    # if equal to 1, the charge is in pC
 
 
 ########## Fundamental Physical constants ########################
-eps0   = sc.epsilon0;   # Electric permittivity of vacuum, F/m
-mu0    = sc.mu0; # Magnetic permittivity of vacuum, kg.m.A-2s-2
+eps0   = sc.epsilon_0;   # Electric permittivity of vacuum, F/m
+mu0    = sc.mu_0; # Magnetic permittivity of vacuum, kg.m.A-2s-2
 e      = sc.e; # Elementary charge, C
 EeV    = sc.eV; # 1 eV = 1.6e-19 Joules
 c      = sc.c;      # Lightspeed, m/s
@@ -54,7 +54,8 @@ ncrit  = eps0*me*omega0**2/e**2; # critical density (m^-3, not cm^-3)
 ########## load data with happi ##############################
 
 def loadData(directory=default_directory):
-    return S = happi.Open(directory, show=False)
+    S = happi.Open(directory, show=False)
+    return S
 
 ######### extract normalized a0 ##############################
 
@@ -183,7 +184,7 @@ def beamParam(iteration,S,species_name="electronfromion",printflag=True,saveflag
             print ""
 
         # all data in one vector
-        vdata = np.array([iteration,
+        vlist = [iteration,
         iteration*dt_adim*onel/c*1e15,
         np.mean(E)*0.512,
         np.std(E)/np.mean(E)*100,
@@ -193,12 +194,13 @@ def beamParam(iteration,S,species_name="electronfromion",printflag=True,saveflag
         rmssize_longitudinal,
         rmssize_y,
         rmssize_z,
-        divergence_rms])
+        divergence_rms]
 
         if saveflag == True:
             print "data saved in cvs file"
+            vdata = np.array(vlist)
             filename = 'smilei-data-it'+str(iteration)+'.csv'
             filepath = homedirectory+'/'+filename
             vdata.tofile(filepath,sep=',',format='%10.5f')
 
-        return vdata
+        return vlist
