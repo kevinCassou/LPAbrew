@@ -11,8 +11,8 @@ import os,sys
 import happi
 import math
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
+#import matplotlib
+#matplotlib.use('Agg')
 import scipy.constants as sc
 import matplotlib.pyplot as plt
 
@@ -23,6 +23,8 @@ lambda0        = 0.8e-6 # Wavelength of the laser
 default_directory = "/ccc/scratch/cont003/smilei/beckarna/IJC_ionization"
 homedirectory     = "/ccc/work/cont003/smilei/cassouke"
 
+
+
 # used to apply a filter in energy (m_e c^2 units, or Lorentz factor)
 E_min          = 0.
 E_max          = 400
@@ -31,6 +33,7 @@ chunk_size     = 100000000  #Chunck of particles treated simultaneously
 
 horiz_axis_conversion_factor = 0.512 # to convert from Smilei units to MeV
 hist_conversion_factor       = 1.    # if equal to 1, the charge is in pC
+
 
 ########## Fundamental Physical constants ########################
 eps0   = sc.epsilon0;   # Electric permittivity of vacuum, F/m
@@ -48,38 +51,39 @@ omega0 = 2*math.pi*c/lambda0
 onel   = lambda0/ (2*math.pi)
 ncrit  = eps0*me*omega0**2/e**2; # critical density (m^-3, not cm^-3)
 
+########## load data with happi ##############################
+
+def loadData(directory=default_directory):
+    return S = happi.Open(directory, show=False)
 
 ######### extract normalized a0 ##############################
 
-def lasera0(iteration,directory=default_directory,laserfield="Ey"):
+def lasera0(S,laserfield="Ey"):
     """ return the a0 at the iteration taking the square of the laserfield max
-    iteration : timestep max
-    directory : scratch directory path [default_directory]
+    S : is the simulation output object return by happi.Open()
     laserfield : ["Ey"]
-    return arrray - a0 and the timestep vector [0:iteration_max]
+    return a numpy array - a0 and the timestep vector [0:iteration_max]
     """
-    S = happi.Open(directory, show=False)
+
     dt_adim    = S.namelist.dt
     # read all timestep Available
-    all_ts = S.Probe(0,laserfield).getTimeSteps()
-    ts = all_ts[:iteration]
+    ts = S.Probe(0,laserfield).getTimesteps()
     a0 = []
     for t in ts:
-        temp = S.Probe(0,laserfield,iteration).getData()[0]
+        temp = S.Probe(0,laserfield,t).getData()[0]
         a0.append(max(temp))
-    return np.array([a0,ts])
+    return np.array([ts,a0])
 
 ######### extract beam parameter for one iteration ###########
 
-def beamParam(directory,iteration,species_name="electronfromion",saveflag=False):
+def beamParam(iteration,S,species_name="electronfromion",printflag=True,saveflag=False):
     """return beams paramater for the species_name of the Smilei simulation data
     iteration : timestep
-    directory : scratch directory path
+    S : is the simulation output object return by happi.Open()
     species_name : [electronfromion], electron
     saveflag : [False] True to save the data in an csv file
      """
     ########## Read data from Track Particles Diag ############
-    S = happi.Open(directory, show=False)
     track_part = S.TrackParticles(species = species_name, chunksize=chunk_size)
     #print "Available timesteps = ",track_part.getAvailableTimesteps()
     dt_adim    = S.namelist.dt
@@ -134,7 +138,7 @@ def beamParam(directory,iteration,species_name="electronfromion",saveflag=False)
             # Compute properties of the bunch
             x2_moy   = (x**2 *w).sum() / total_weight
             y2_moy   = (y**2 *w).sum() / total_weight
-            z2_moy   = (z**2 *w).sum() / total_weigh
+            z2_moy   = (z**2 *w).sum() / total_weight
             #px2_moy  = (px**2*w).sum() / total_weight
             py2_moy  = (py**2*w).sum() / total_weight
             pz2_moy  = (pz**2*w).sum() / total_weight
@@ -161,7 +165,9 @@ def beamParam(directory,iteration,species_name="electronfromion",saveflag=False)
             rmssize_z =            2*math.sqrt(z2_moy) * onel * 1e6 # [micron]
             divergence_rms = math.sqrt( py2ovpx2 + pz2ovpx2 )
 
-        print ""
+        # print beam parameter
+        if printflag == True:
+            print ""
             print "--------------------------------------------"
             print ""
             print "Read ",np.size(E)," particles"
@@ -174,17 +180,25 @@ def beamParam(directory,iteration,species_name="electronfromion",saveflag=False)
             print "Emittance_z = ",emittancez," mm-mrad"
             print ""
             print "--------------------------------------------"
-	    print ""
+            print ""
+
+        # all data in one vector
+        vdata = np.array([iteration,
+        iteration*dt_adim*onel/c*1e15,
+        np.mean(E)*0.512,
+        np.std(E)/np.mean(E)*100,
+        Q,
+        emittancey,
+        emittancez,
+        rmssize_longitudinal,
+        rmssize_y,
+        rmssize_z,
+        divergence_rms])
 
         if saveflag == True:
             print "data saved in cvs file"
-            vdata = np.array([iteration,
-            iteration*dt_adim*onel/c*1e15,
-            np.mean(E)*0.512,
-            np.std(E)/np.mean(E)*100,
-            Q,
-            emittancey,
-            emittancez])
             filename = 'smilei-data-it'+str(iteration)+'.csv'
             filepath = homedirectory+'/'+filename
             vdata.tofile(filepath,sep=',',format='%10.5f')
+
+        return vdata
