@@ -57,8 +57,6 @@ def loadData(directory=default_directory):
     S = happi.Open(directory, show=False)
     return S
 
-dt_adim    = S.namelist.dt
-
 ######### extract normalized a0 ##############################
 
 def lasera0(S,laserfield="Ey"):
