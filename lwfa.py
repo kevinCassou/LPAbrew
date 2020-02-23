@@ -2,7 +2,7 @@
 #!/usr/bin/python
 # Author:       F Massimo, implemented as function by K Cassou
 # Date:         2018-02-10, 2020-02-12
-# Purpose:      plots 1D spectrum of Smilei Particles data
+# Purpose:      set of function for LWFA simulation with SMILEI
 # Source:       Python
 #####################################################################
 
@@ -48,7 +48,7 @@ hbar   = sc.hbar
 
 ########## Physical constants ########################
 omega0 = 2*math.pi*c/lambda0
-onel   = lambda0/ (2*math.pi)
+onel   = lambda0/ (2*np.pi)
 ncrit  = eps0*me*omega0**2/e**2; # critical density (m^-3, not cm^-3)
 
 ########## load data with happi ##############################
@@ -56,6 +56,8 @@ ncrit  = eps0*me*omega0**2/e**2; # critical density (m^-3, not cm^-3)
 def loadData(directory=default_directory):
     S = happi.Open(directory, show=False)
     return S
+
+dt_adim    = S.namelist.dt
 
 ######### extract normalized a0 ##############################
 
@@ -65,8 +67,6 @@ def lasera0(S,laserfield="Ey"):
     laserfield : ["Ey"]
     return a numpy array - a0 and the timestep vector [0:iteration_max]
     """
-
-    dt_adim    = S.namelist.dt
     # read all timestep Available
     ts = S.Probe(0,laserfield).getTimesteps()
     a0 = []
@@ -181,7 +181,7 @@ def beamParam(iteration,S,species_name="electronfromion",printflag=True,saveflag
                 print "Emittance_z = ",emittancez," mm-mrad"
                 print ""
                 print "--------------------------------------------"
-                print ""            
+                print ""
 
             # beam paramater list for iteration timestep
             vlist = [iteration,
