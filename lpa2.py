@@ -13,6 +13,8 @@ import numpy as np
 #import matplotlib
 #matplotlib.use('Agg')
 import scipy.constants as sc
+from scipy.optimize import curve_fit
+from scipy.signal import find_peaks, peak_widths
 import matplotlib.pyplot as plt
 
 ############ Inputs ##############################################
@@ -25,7 +27,7 @@ homedirectory     = "/ccc/work/cont003/smilei/cassouke"
 
 # used to apply a filter in energy (m_e c^2 units, or Lorentz factor)
 E_min          = 0.
-E_max          = 420
+E_max          = 500
 
 chunk_size     = 100000000  #Chunck of particles treated simultaneously
 
@@ -49,7 +51,7 @@ onel   = lambda0/ (2*np.pi)
 ncrit  = eps0*me*omega0**2/e**2; # critical density (m^-3, not cm^-3)
 
 
-######### functions ######################################## 
+######### useful functions #################################### 
 def lin_interp(x, y, i, half):
     return x[i] + (x[i+1] - x[i]) * ((half - y[i]) / (y[i+1] - y[i]))
 
@@ -64,30 +66,66 @@ def fwhm(x,y):
     hmx = half_max_x(x,y)
     return hmx[1]-hmx[0]
 
+def gaussian(x, amp, xcenter, width):
+    return amp * np.exp(-(x-xcenter)**2 / width**2)
+
 ########## load data with happi ##############################
 
 def loadData(directory=default_directory):
     """loading data in the simulation directory and return an object pointing to the various 
     files, see smilei website"""
-    S = happi.Open(directory, show=False)
+    S = happi.Open(directory, show = False,verbose = False, )
     return S
 
-######### extract normalized var ##############################
+######### extract laser var ##############################
 
 def getMaxinMovingWindow(S,var="Env_E_abs"):
-    """ return the max of var at the iteration for the moving window
-    on axis (r=0)
+    """ return the max of var on axis (r=0) for all timestep available
     S : is the simulation output object return by happi.Open()
     var : check namelist ["Env_E_abs]
     return a numpy array - var.max() and the timestep vector [0:iteration_max]
     """
     # read all timestep Available
     ts = S.Probe(0,var).getTimesteps()
-    varmax = []
+    varmax = np.zeros((2,len(ts)))
     for t in ts:
         temp = S.Probe(0,var,t).getData()[0]
-        varmax.append(max(temp))
-    return np.array([ts,varmax])
+        varmax[0,t] = t
+        varmax[1,t] = np.max(temp)
+    return varmax
+
+def getLaserWaist(S,timeStep,var='Env_E_abs'):
+    """ return the laser waist of Env or field `var` at the iteration
+    S : is the simulation output object return by happi.Open()
+    timestep : simulation timestep
+    var : check namelist ["Env_E_abs" or laser field] to be updated for AM geometry
+    return the waist evaluated with Gaussian fit in code units (lamda_0/2pi)
+    """
+    temp = S.Probe(1,var,timeStep).getData()[0]
+    (x_max,y_max) = np.unravel_index(np.argmax(temp),temp.shape)
+    init_vals = [np.max(temp),y_max, 1.0]
+    a_val = temp[x_max,:]
+    y_val = np.arange(0,temp.shape[1],1)
+    # gaussian fit 
+    best_vals, covar = curve_fit(gaussian, y_val, a_val, p0=init_vals)
+    return best_vals[2]
+
+def getLaserPulselength(S,timeStep,var='Env_E_abs'):
+    """ return the laser pulse length of Env or field `var` at the iteration 
+    S : is the simulation output object return by happi.Open()
+    timestep : simulation timestep
+    var : check namelist ["Env_E_abs" or laser field] to be updated for AM geometry
+    return the pulse length FWHM evaluated with Gaussian fit in code units (lamda_0/2pi)
+    """
+    temp = S.Probe(1,var,timeStep).getData()[0]
+    (x_max,y_max) = np.unravel_index(np.argmax(temp),temp.shape)
+    init_vals = [np.max(temp),x_max, 1.0]
+    a_val = temp[:,y_max]
+    x_val = np.arange(0,temp.shape[0],1)
+    # gaussian fit slightly underestimate FWHM value
+    best_vals, covar = curve_fit(gaussian, x_val, a_val, p0=init_vals)
+    return best_vals[2]*2*np.sqrt(2*np.log(2))
+
 
 ######### extract plasma profile ############################
 
@@ -113,7 +151,7 @@ def dopantProfile(S):
 
 ######### extract beam parameter for one iteration ###########
 
-def beamParam(S,iteration,species_name="electronfromion",E_min=0,E_max=400,chunk_size=100000000,print_flag=True,save_flag=False):
+def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=50,E_max=520,chunk_size=100000000,print_flag=True,save_flag=False):
     """return beams paramater for the species_name of the Smilei simulation data
     iteration : timestep
     S : is the simulation output object return by happi.Open()
@@ -124,7 +162,7 @@ def beamParam(S,iteration,species_name="electronfromion",E_min=0,E_max=400,chunk
     saveflag :      [False] True to save the data in an csv file
      """
     ########## Read data from Track Particles Diag ############
-    track_part = S.TrackParticles(species = species_name, chunksize=chunk_size)
+    track_part = S.TrackParticles(species = species_name, sort = sort, chunksize=chunk_size)
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
     dt_adim    = S.namelist.dt
     for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
@@ -230,17 +268,18 @@ def beamParam(S,iteration,species_name="electronfromion",E_min=0,E_max=400,chunk
                 print( "")
 
             # beam paramater list for iteration timestep
-            vlist = [iteration,
-            iteration*dt_adim*onel/c*1e15,
-            np.mean(E)*0.512,
-            np.std(E)/np.mean(E)*100,
-            Q,
-            emittancey,
-            emittancez,
-            rmssize_longitudinal,
-            rmssize_y,
-            rmssize_z,
-            divergence_rms]
+            vlist = [iteration,                 # timestep
+            iteration*dt_adim*onel/c*1e15,      # time [fs]
+            np.mean(E)*0.512,                   # mean energy   [MeV]
+            np.std(E)/np.mean(E)*100,           # % RMS energy spread   [%]
+            Q,                                  # charge [pC]
+            emittancey,                         # emittance [pi.mm.mrad]
+            emittancez,                         # emittance [pi.mm.mrad]
+            emittance_transverse,               # emittance [pi.mm.mrad]
+            rmssize_longitudinal,               # bunch RMS length [um]
+            rmssize_y,                          # bunch RMS sigy [um]
+            rmssize_z,                          # bunch RMS sigz [um]
+            divergence_rms]                     # RMS divergence [mrad]
 
             # save beam parameter in a file
             if save_flag == True:
@@ -249,21 +288,43 @@ def beamParam(S,iteration,species_name="electronfromion",E_min=0,E_max=400,chunk
                 filename = 'smilei-beamparam'+str(iteration)+'.csv'
                 filepath = homedirectory+'/'+filename
                 vdata.tofile(filepath,sep=',',format='%10.5f')
-            return vlist
+            return np.array(vlist)
 
-def getPartAvailableSteps(S,species_name="electronfromion",chunk_size=10000000):
+def getPartAvailableSteps(S,species_name="electronfromion",sort = False, chunk_size=10000000):
     """return available timesteps for the trackParticles"""
-    return S.TrackParticles(species = species_name, chunksize=chunk_size).getAvailableTimesteps()
+    return S.TrackParticles(species = species_name, sort = False, chunksize=chunk_size).getAvailableTimesteps()
 
-def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_name= "E",chunk_size=100000000,E_min=0,E_max=400,plot_flag=False,print_flag=False):
+def getInjectionTime(S,ts,specie='Rho_electronfromion',threshold = 1e-4,print_flag = False):
+    """ return the injection timestep and longitudinal coordinate of the injection.
+    The injection is defined by a threshold on the `electron_from_ion` density
+    S : is the simulation output object return by happi.Open()
+    ts : timestep vector [numpy array]
+    ti : timestep 
+    xi : longitudinal position 
+    """ 
+    dls = S.namelist.lambda_0/(2*np.pi)
+    
+    for t in range(len(ts)):
+        rhoei = S.Probe(0,specie,ts[t]).getData()[0]
+        if np.abs(rhoei.min())> threshold:
+            ti = ts[t]
+            xi = ts[t]*dls
+            #print('index:', t)
+            #print('injection time:',ti,'timestep')
+            #print('injection x:',xi,'mm')
+            break
+    return ti,xi
+
+def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_name= "E", sort = False, chunk_size=100000000,E_min=25, E_max = 520,plot_flag = False, print_flag = False):
     """ return spectrum plot or data for a given timesteps
     S : smilei output data
     iteration_to_plot : timestep 
     species_name : [electronfromion], electron
     horiz_axis_name : [E] can be px, p or E 
     E_min : [0] min value considered in histogram for the horiz axis, in code units 
-    E_max : [400] max value considered in histogram for the horiz axis, in code units
-    return spectrum data as (horizontal axis (E, or p),S(E,or p)) 
+    E_max : [500] max value considered in histogram for the horiz axis, in code units
+    peakSpectrum : numpy array with peak max energy value and FWHM of the peak. Shape is (len(binX),2) 
+    return spectrum data as numpy arrays  (horizontal axis (E, or p), dQd(E,or p), Epeak, Ewidth) 
     """
     #global specData
 
@@ -278,7 +339,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
     hist_conversion_factor       = 1.    # if equal to 1, the charge is in pC
 
     ########## Read data from Track Particles Diag  
-    track_part = S.TrackParticles(species = species_name, chunksize=chunk_size)
+    track_part = S.TrackParticles(species = species_name, sort = sort, chunksize=chunk_size)
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
     
     dt_adim    = S.namelist.dt
@@ -302,7 +363,6 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
         Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
         if print_flag==True:
             print("Total charge before filter in energy= ",Q," pC")
-
 
         # Apply a filter on energy
         filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0] )
@@ -344,7 +404,8 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
 
         # horizontal axis 
         horiz_edges = horiz_edges[0:-1]
-        horiz_edges = horiz_edges + 0.5*dhoriz_axis*horiz_axis_conversion_factor
+        binx = dhoriz_axis*horiz_axis_conversion_factor
+        horiz_edges = horiz_edges + 0.5*binx
         energy_axis = horiz_edges*horiz_axis_conversion_factor
 
         # Preparation for Plot
@@ -355,11 +416,15 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
 
         #print np.shape(histogram_spectrum)
         #
-        print('Total charge in in the histogram =',np.sum(histogram_spectrum[:])*dhoriz_axis*horiz_axis_conversion_factor,' pC')
-        print('Bins size: dx = ',dhoriz_axis*horiz_axis_conversion_factor)
+        if print_flag==True:
+            print('Total charge in in the histogram =',np.sum(histogram_spectrum[:])*dhoriz_axis*horiz_axis_conversion_factor,' pC')
+            print('Bins size: dx = ',binx)
 
         histogram_spectrum[histogram_spectrum==0.]=float(np.nan)
-        print(len(energy_axis))
+
+        if print_flag==True:
+            print(len(energy_axis))
+
         specData = np.array((histogram_spectrum))
         
         # Plot
@@ -386,12 +451,25 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
             
             #plt.savefig(homedirectory+"/E_Spectrum.png",format='png')
             plt.show()
-            
-    return specData, energy_axis
+        
+        Epeak= np.zeros((np.shape(specData)[0]))
+        Ewidth = np.zeros((np.shape(specData)[0]))
 
-def getParticles(S,iteration,species_name="electronfromion",chunk_size=100000000,print_flag = True):
+        # compute the full width half maximum using scipy.signal.findpeaks 
+        for i in range(len(specData)):
+            p , _  = find_peaks(specData,prominence=0.5)
+            if len(p)==0 :
+                Epeak[i] = np.NaN
+                Ewidth[i] = np.NaN
+            else :  
+                Epeak[i] = energy_axis[i][p[0]]
+                Ewidth[i] = peak_widths(specData[i], p, rel_height=0.5)[0]
+                
+    return energy_axis, specData, Epeak, Ewidth
+
+def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_size=100000000,print_flag = True):
     """return x,y,z,px,py,pz,E,w,p for all particle at timesteps iteration within the filter"""
-    track_part = S.TrackParticles(species = species_name, chunksize=chunk_size)
+    track_part = S.TrackParticles(species = species_name,sort = sort,  chunksize=chunk_size)
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
     dt_adim    = S.namelist.dt
     for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
@@ -428,4 +506,3 @@ def getParticles(S,iteration,species_name="electronfromion",chunk_size=100000000
         total_weight = w.sum()
         
     return np.array([x,y,z,px,py,pz,E,w,p])
-
