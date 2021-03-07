@@ -88,8 +88,8 @@ def getMaxinMovingWindow(S,var="Env_E_abs"):
     # read all timestep Available
     ts = S.Probe(0,var).getTimesteps()
     varmax = np.zeros((2,len(ts)))
-    for t in ts:
-        temp = S.Probe(0,var,t).getData()[0]
+    for t in range(len(ts)):
+        temp = S.Probe(0,var,ts[t]).getData()[0]
         varmax[0,t] = ts[t]
         varmax[1,t] = np.max(temp)
     return varmax
@@ -102,7 +102,7 @@ def getLaserWaist(S,timeStep,var='Env_E_abs'):
     return the waist evaluated with Gaussian fit in code units (lamda_0/2pi)
     """
     temp = S.Probe(1,var,timeStep).getData()[0]
-    (x_max,y_max) = np.unravel_index(np.argmax(temp),temp.shape)
+    x_max,y_max = np.unravel_index(np.argmax(temp),temp.shape)
     init_vals = [np.max(temp),y_max, 1.0]
     a_val = temp[x_max,:]
     y_val = np.arange(0,temp.shape[1],1)
@@ -118,7 +118,7 @@ def getLaserPulselength(S,timeStep,var='Env_E_abs'):
     return the pulse length FWHM evaluated with Gaussian fit in code units (lamda_0/2pi)
     """
     temp = S.Probe(1,var,timeStep).getData()[0]
-    (x_max,y_max) = np.unravel_index(np.argmax(temp),temp.shape)
+    x_max,y_max = np.unravel_index(np.argmax(temp),temp.shape)
     init_vals = [np.max(temp),x_max, 1.0]
     a_val = temp[:,y_max]
     x_val = np.arange(0,temp.shape[0],1)
@@ -456,7 +456,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
     
         # compute the full width half maximum using scipy.signal.findpeaks 
         
-        prom = (np.nanmax(specData)-np.nanmin(specData[i]))*0.66 #factor might be adjusted 
+        prom = (np.nanmax(specData)-np.nanmin(specData))*0.66 #factor might be adjusted 
         p , _  = find_peaks(specData,prominence=prom)
         if len(p)==0 :
             Epeak = np.NaN

@@ -35,7 +35,7 @@ n_e_1           = np.zeros([number_files])
 r               = np.zeros([number_files])
 l_1             = np.zeros([number_files])
 x_foc           = np.zeros([number_files])
-C_N2            = np.zeros([number_files])
+c_N2            = np.zeros([number_files])
 x_foc_vac       = np.zeros([number_files])
 a0_max          = np.zeros([number_files])
 x_a0_max        = np.zeros([number_files])
@@ -52,7 +52,7 @@ divergence_rms  = np.zeros([number_files])
 
 
 ## scanning the configuration
-for f in range():
+for f in range(number_files):
     # loading data 
     print("loading data ...\n",
     str(files[f]),"\n")
@@ -63,8 +63,8 @@ for f in range():
     r[f]= tmp.namelist.config_external['r']
     l_1[f] = tmp.namelist.config_external['l_1']
     x_foc[f] = tmp.namelist.config_external['x_foc']
-    C_N2[f] = tmp.namelist.config_external['c_N2']
-    x_foc_vac[f] = tmp.namelist.xfocus['x_foc_vac'] 
+    c_N2[f] = tmp.namelist.config_external['c_N2']
+    x_foc_vac[f] = tmp.namelist.xfocus
     # value and position of the max of a0 
     x,a = l.getMaxinMovingWindow(tmp)
     a0_max[f] = a.max()
@@ -73,18 +73,18 @@ for f in range():
     # timesteps vector
     ts = l.getPartAvailableSteps(tmp)
     # injection timestep and position (m)
-    ti[f],xi[f] = l.getInjectionTime(tmp,ts
+    ti[f],xi[f] = l.getInjectionTime(tmp,ts)
     if ti[f] == np.nan :
         injection_flag[f] = False
         print("#####################################\n",
         '#\t no injection \n',
-        "#####################################')
+        "#####################################")
         ti[f] = np.nan
         xi[f] = np.nan
         E_fwhm[f] = np.nan
         E_peak[f] = np.nan
         emittance_y[f] = np.nan
-        emittance_z[] = np.nan
+        emittance_z[f] = np.nan
         divergence_rms[f] = np.nan
         q_end[f] = np.nan
     else :
@@ -94,15 +94,15 @@ for f in range():
         energy_axis, spectrum, E_peak[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1],print_flag=True)
     
         # beam parameter filter around 
-        param_list = l.getBeamParam(tmp,ts[-1],E_min=E_peak[f]-2*E_fwhm,E_max==E_peak+2*E_fwhm,print_flag=True)
+        param_list = l.getBeamParam(tmp,ts[-1],E_min=E_peak[f]-2*E_fwhm,E_max=E_peak+2*E_fwhm,print_flag=True)
         emittance_y[f] = param_list[5]
-        emittance_z[] = param_list[6]
+        emittance_z[f] = param_list[6]
         divergence_rms[f] = param_list[10]
         q_end[f] = param_list[5]
 
 
 
-dict_data = {'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac, 'a0_max':a0_max,'x_a0_max':x_a0_max
+dict_data = {'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac, 'a0_max':a0_max,'x_a0_max':x_a0_max,
 'injection':injection_flag,'t_i': ti,'x_i':xi,'E_peak':E_peak,'E_fwhm':E_fwhm,
 'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'div_rms':divergence_rms}
 
