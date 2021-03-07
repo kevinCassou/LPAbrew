@@ -56,7 +56,7 @@ for f in range():
     # loading data 
     print("loading data ...\n",
     str(files[f]),"\n")
-    
+
     tmp = l.loadData(str(files[f]))
     # read configuration
     n_e_1[f] = tmp.namelist.config_external['n_e_1']
@@ -74,7 +74,7 @@ for f in range():
     ts = l.getPartAvailableSteps(tmp)
     # injection timestep and position (m)
     ti[f],xi[f] = l.getInjectionTime(tmp,ts
-    if ti == []:
+    if ti[f] == np.nan :
         injection_flag[f] = False
         print("#####################################\n",
         '#\t no injection \n',
@@ -90,7 +90,6 @@ for f in range():
     else :
         injection_flag[f] = True
     
-
         # get electron spectrum at last timestep
         energy_axis, spectrum, E_peak[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1],print_flag=True)
     
