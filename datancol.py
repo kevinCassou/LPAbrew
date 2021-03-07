@@ -31,6 +31,7 @@ print("Number of configuration : \t", number_files)
 number_files = 10
 
 # initialization of arrays
+Config          = np.zeros([number_files])
 n_e_1           = np.zeros([number_files])
 r               = np.zeros([number_files])
 l_1             = np.zeros([number_files])
