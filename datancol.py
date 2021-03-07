@@ -54,11 +54,15 @@ divergence_rms  = np.zeros([number_files])
 ## scanning the configuration
 for f in range(number_files):
     # loading data 
+    print("")
+    print("--------------------------------------------")
+    print("")
     print("loading data ...\n",
     str(files[f]),"\n")
 
     tmp = l.loadData(str(files[f]))
     # read configuration
+    Config[f] = tmp.namelist.config_external['Config']
     n_e_1[f] = tmp.namelist.config_external['n_e_1']
     r[f]= tmp.namelist.config_external['r']
     l_1[f] = tmp.namelist.config_external['l_1']
@@ -68,7 +72,7 @@ for f in range(number_files):
     # value and position of the max of a0 
     x,a = l.getMaxinMovingWindow(tmp)
     a0_max[f] = a.max()
-    x_a0_max[f] = x[a0_max.argmax()]
+    x_a0_max[f] = x[a.argmax()]
 
     # timesteps vector
     ts = l.getPartAvailableSteps(tmp)
@@ -94,7 +98,7 @@ for f in range(number_files):
         energy_axis, spectrum, E_peak[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1],print_flag=True)
     
         # beam parameter filter around 
-        param_list = l.getBeamParam(tmp,ts[-1],E_min=E_peak[f]-2*E_fwhm,E_max=E_peak+2*E_fwhm,print_flag=True)
+        param_list = l.getBeamParam(tmp,ts[-1], E_min=(E_peak[f]-2*E_fwhm[f])/0.512, E_max = (E_peak[f]+3*E_fwhm[f])/0.512,print_flag=True)
         emittance_y[f] = param_list[5]
         emittance_z[f] = param_list[6]
         divergence_rms[f] = param_list[10]
@@ -102,11 +106,17 @@ for f in range(number_files):
 
 
 
-dict_data = {'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac, 'a0_max':a0_max,'x_a0_max':x_a0_max,
+dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac, 'a0_max':a0_max,'x_a0_max':x_a0_max,
 'injection':injection_flag,'t_i': ti,'x_i':xi,'E_peak':E_peak,'E_fwhm':E_fwhm,
 'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'div_rms':divergence_rms}
 
 df = pd.DataFrame(dict_data)
 
-df.to_csv('dataframe_bfscan.csv',sep=',')
+df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_foc_vac', 'a0_max','x_a0_max',
+'injection','t_i','x_i','E_peak','E_fwhm',
+'q_end','emit_y','emit_z','div_rms']]
 
+# saving dataframe to csv
+df.to_csv('dataframe_bfscan.csv')
+
+print('')

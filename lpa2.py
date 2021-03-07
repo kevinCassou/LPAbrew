@@ -167,8 +167,8 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
     dt_adim    = S.namelist.dt
     for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
         # Read data
-        if print_flag==True:
-            print(particle_chunk.keys())
+        #if print_flag==True:
+        #    print(particle_chunk.keys())
         px           = particle_chunk["px"]
         py           = particle_chunk["py"]
         pz           = particle_chunk["pz"]
@@ -254,15 +254,15 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print("")
                 print("--------------------------------------------")
                 print("")
-                print("Read ",np.size(E)," particles")
-                print( "Iteration = ",iteration)
-                print( "Simulation time = ",iteration*dt_adim*onel/c*1e15," fs")
-                print( "E_mean = ",np.mean(E)*0.512," MeV")
-                print( "2*DeltaE_rms / E_mean = ", np.std(E)/np.mean(E)*100 , " %.")
-                print( "Total charge = ", Q, " pC.")
-                print( "Emittance_y = ",emittancey," mm-mrad")
-                print( "Emittance_z = ",emittancez," mm-mrad")
-                print( "divergence_rms = ",divergence_rms)
+                print("Read \t\t\t",np.size(E)," particles")
+                print( "Iteration =\t\t\t ",iteration)
+                print( "Simulation time =\t\t\t ",iteration*dt_adim*onel/c*1e15," fs")
+                print( "E_mean = \t\t\t",np.mean(E)*0.512," MeV")
+                print( "2*DeltaE_rms / E_mean = \t\t\t", np.std(E)/np.mean(E)*100 , " %.")
+                print( "Total charge = \t\t\t", Q, " pC.")
+                print( "Emittance_y = \t\t\t",emittancey," mm-mrad")
+                print( "Emittance_z = \t\t\t",emittancez," mm-mrad")
+                print( "divergence_rms = \t\t\t",divergence_rms*1e-3,"mrad")
                 print( "")
                 print( "--------------------------------------------")
                 print( "")
@@ -347,8 +347,8 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
     dt_adim    = S.namelist.dt
     for particle_chunk in track_part.iterParticles(iteration_to_plot, chunksize=chunk_size):
         # Read data
-        if print_flag==True:
-            print(particle_chunk.keys())
+        #if print_flag==True:
+        #    print(particle_chunk.keys())
         px           = particle_chunk["px"]
         py           = particle_chunk["py"]
         pz           = particle_chunk["pz"]
@@ -365,7 +365,6 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
         Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
         if print_flag==True:
             print("Total charge before filter in energy= ",Q," pC")
-
         # Apply a filter on energy
         filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0] )
         x            = x[filter]
@@ -424,8 +423,8 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
 
         histogram_spectrum[histogram_spectrum==0.]=float(np.nan)
 
-        if print_flag==True:
-            print(len(energy_axis))
+        #if print_flag==True:
+        #    print(len(energy_axis))
 
         specData = np.array((histogram_spectrum))
         
@@ -440,13 +439,13 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
 
             extnt = np.array([horiz_axis.min()*horiz_axis_conversion_factor, \
                           horiz_axis.max()*horiz_axis_conversion_factor ])
-            print("Values extension for ",horiz_axis_name," (all particles):")
-            print(extnt)
+            #print("Values extension for ",horiz_axis_name," (all particles):")
+            #print(extnt)
 
             extnt = np.array([horiz_axis_min*horiz_axis_conversion_factor, \
                           horiz_axis_max*horiz_axis_conversion_factor])
-            print( "Values extension for ",horiz_axis_name," (particles included in the chosen horiz axis limits):")
-            print(extnt)
+            #print( "Values extension for ",horiz_axis_name," (particles included in the chosen horiz axis limits):")
+            #print(extnt)
 
             plt.plot(energy_axis,histogram_spectrum)
             plt.xlim([horiz_axis_min*horiz_axis_conversion_factor,horiz_axis_max*horiz_axis_conversion_factor])
@@ -463,7 +462,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
             Ewidth = np.NaN
         else :  
             Epeak = energy_axis[p[0]]
-            Ewidth = peak_widths(specData, p, rel_height=0.5)[0]
+            Ewidth = peak_widths(specData, p, rel_height=0.5)[0][0]
         if print_flag == True:
             print("beam Peak energy: \t",Epeak,"MeV")
             print("beam FWHM energy: \t",Ewidth,"MeV")
@@ -477,8 +476,8 @@ def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_si
     dt_adim    = S.namelist.dt
     for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
         # Read data
-        if print_flag==True:
-        	print(particle_chunk.keys())
+        #if print_flag==True:
+        #	print(particle_chunk.keys())
         px           = particle_chunk["px"]
         py           = particle_chunk["py"]
         pz           = particle_chunk["pz"]
@@ -507,50 +506,5 @@ def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_si
         w            = w[filter]
         p            = p[filter]
         total_weight = w.sum()
-        
-    return np.array([x,y,z,px,py,pz,E,w,p])
-
-
-def getParticles(S,iteration,species_name="electronfromion",sort = False, chunk_size = 100000000,E_min = 0, E_max = 500, print_flag = True):
-    """return x,y,z,px,py,pz,E,w,p for all particle at timesteps iteration within the filter"""
-    track_part = S.TrackParticles(species = species_name,sort = sort,  chunksize=chunk_size)
-    #print("Available timesteps = ",track_part.getAvailableTimesteps())
-    dt_adim    = S.namelist.dt
-    for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
-        # Read data
-        if print_flag==True:
-        	print(particle_chunk.keys())
-        px           = particle_chunk["px"]
-        py           = particle_chunk["py"]
-        pz           = particle_chunk["pz"]
-        x            = particle_chunk["x"]
-        y            = particle_chunk["y"]
-        z            = particle_chunk["z"]
-        w            = particle_chunk["w"]
-        p            = np.sqrt((px**2+py**2+pz**2))                # momentum
-        E            = np.sqrt((1.+p**2))
-        Nparticles   = np.size(w)
-        if print_flag==True:                                  # Number of particles read
-            print("Read ",Nparticles," particles from the file")
-        total_weight = w.sum()
-        Q            = total_weight* sc.e * ncrit * onel**3 * 10**(12) # Total charge in pC
-        if print_flag==True:  
-            print("Total charge before filter in energy= ",Q," pC")
-        # Apply a filter on energy
-        filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0])
-        x            = x[filter]
-        y            = y[filter]
-        z            = z[filter]
-        px           = px[filter]
-        py           = py[filter]
-        pz           = pz[filter]
-        E            = E[filter]
-        w            = w[filter]
-        p            = p[filter]
-        total_weight = w.sum()
-        if print_flag==True:  
-            print("Total charge after filter in energy= ",Q," pC")
-        total_weight = w.sum()
-        Q            = total_weight* sc.e * ncrit * onel**3 * 10**(12) # Total charge in pC
         
     return np.array([x,y,z,px,py,pz,E,w,p])
