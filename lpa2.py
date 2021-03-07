@@ -275,7 +275,6 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
             Q,                                  # charge [pC]
             emittancey,                         # emittance [pi.mm.mrad]
             emittancez,                         # emittance [pi.mm.mrad]
-            emittance_transverse,               # emittance [pi.mm.mrad]
             rmssize_longitudinal,               # bunch RMS length [um]
             rmssize_y,                          # bunch RMS sigy [um]
             rmssize_z,                          # bunch RMS sigz [um]
