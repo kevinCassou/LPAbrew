@@ -90,7 +90,7 @@ def getMaxinMovingWindow(S,var="Env_E_abs"):
     varmax = np.zeros((2,len(ts)))
     for t in ts:
         temp = S.Probe(0,var,t).getData()[0]
-        varmax[0,t] = t
+        varmax[0,t] = ts[t]
         varmax[1,t] = np.max(temp)
     return varmax
 
@@ -450,20 +450,21 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
             
             #plt.savefig(homedirectory+"/E_Spectrum.png",format='png')
             plt.show()
-        
-        Epeak= np.zeros((np.shape(specData)[0]))
-        Ewidth = np.zeros((np.shape(specData)[0]))
-
+    
         # compute the full width half maximum using scipy.signal.findpeaks 
-        for i in range(len(specData)):
-            p , _  = find_peaks(specData,prominence=0.5)
-            if len(p)==0 :
-                Epeak[i] = np.NaN
-                Ewidth[i] = np.NaN
-            else :  
-                Epeak[i] = energy_axis[i][p[0]]
-                Ewidth[i] = peak_widths(specData[i], p, rel_height=0.5)[0]
-                
+        
+        prom = (np.nanmax(specData)-np.nanmin(specData[i]))*0.66 #factor might be adjusted 
+        p , _  = find_peaks(specData,prominence=prom)
+        if len(p)==0 :
+            Epeak = np.NaN
+            Ewidth = np.NaN
+        else :  
+            Epeak = energy_axis[p[0]]
+            Ewidth = peak_widths(specData, p, rel_height=0.5)[0]
+        if print_flag == True:
+            print("beam Peak energy: \t",Epeak,"MeV")
+            print("beam FWHM energy: \t",Ewidth,"MeV")
+
     return energy_axis, specData, Epeak, Ewidth
 
 def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_size=100000000,print_flag = True):
@@ -503,5 +504,50 @@ def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_si
         w            = w[filter]
         p            = p[filter]
         total_weight = w.sum()
+        
+    return np.array([x,y,z,px,py,pz,E,w,p])
+
+
+def getParticles(S,iteration,species_name="electronfromion",sort = False, chunk_size = 100000000,E_min = 0, E_max = 500, print_flag = True):
+    """return x,y,z,px,py,pz,E,w,p for all particle at timesteps iteration within the filter"""
+    track_part = S.TrackParticles(species = species_name,sort = sort,  chunksize=chunk_size)
+    #print("Available timesteps = ",track_part.getAvailableTimesteps())
+    dt_adim    = S.namelist.dt
+    for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
+        # Read data
+        if print_flag==True:
+        	print(particle_chunk.keys())
+        px           = particle_chunk["px"]
+        py           = particle_chunk["py"]
+        pz           = particle_chunk["pz"]
+        x            = particle_chunk["x"]
+        y            = particle_chunk["y"]
+        z            = particle_chunk["z"]
+        w            = particle_chunk["w"]
+        p            = np.sqrt((px**2+py**2+pz**2))                # momentum
+        E            = np.sqrt((1.+p**2))
+        Nparticles   = np.size(w)
+        if print_flag==True:                                  # Number of particles read
+            print("Read ",Nparticles," particles from the file")
+        total_weight = w.sum()
+        Q            = total_weight* sc.e * ncrit * onel**3 * 10**(12) # Total charge in pC
+        if print_flag==True:  
+            print("Total charge before filter in energy= ",Q," pC")
+        # Apply a filter on energy
+        filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0])
+        x            = x[filter]
+        y            = y[filter]
+        z            = z[filter]
+        px           = px[filter]
+        py           = py[filter]
+        pz           = pz[filter]
+        E            = E[filter]
+        w            = w[filter]
+        p            = p[filter]
+        total_weight = w.sum()
+        if print_flag==True:  
+            print("Total charge after filter in energy= ",Q," pC")
+        total_weight = w.sum()
+        Q            = total_weight* sc.e * ncrit * onel**3 * 10**(12) # Total charge in pC
         
     return np.array([x,y,z,px,py,pz,E,w,p])
