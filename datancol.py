@@ -100,13 +100,15 @@ for f in range(number_files):
         
         # beam parameter filter around 
         if (E_peak[f] == np.nan) or (E_fwhm[f] == np.nan) :
-            param_list = l.getBeamParam(tmp,ts[-1], E_min=50, E_max = 500,print_flag=True)
+            param_list = l.getBeamParam(tmp,ts[-1], E_min=50, E_max = 520,print_flag=True)
             emittance_y[f] = param_list[5]
             emittance_z[f] = param_list[6]
             divergence_rms[f] = param_list[10]
             q_end[f] = param_list[5]
         else :
-            param_list = l.getBeamParam(tmp,ts[-1], E_min=(E_peak[f]-2*E_fwhm[f])/0.512, E_max = (E_peak[f]+3*E_fwhm[f])/0.512,print_flag=True)
+            Emin = np.max(0,(E_peak[f]-2*E_fwhm[f])/0.512)
+            Emax = (E_peak[f]+2*E_fwhm[f])/0.512
+            param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax ,print_flag=True)
             emittance_y[f] = param_list[5]
             emittance_z[f] = param_list[6]
             divergence_rms[f] = param_list[10]
