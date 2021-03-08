@@ -458,8 +458,8 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
         prom = (np.nanmax(specData)-np.nanmin(specData))*0.66 #factor might be adjusted 
         p , _  = find_peaks(specData,prominence=prom)
         if len(p)==0 :
-            Epeak = np.NaN
-            Ewidth = np.NaN
+            Epeak = 0
+            Ewidth = 0
         else :  
             Epeak = energy_axis[p[0]]
             Ewidth = peak_widths(specData, p, rel_height=0.5)[0][0]

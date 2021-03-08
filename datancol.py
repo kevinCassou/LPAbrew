@@ -99,7 +99,7 @@ for f in range(number_files):
         energy_axis, spectrum, E_peak[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1],print_flag=True)
         
         # beam parameter filter around 
-        if (E_peak[f] == np.nan) or (E_fwhm[f] == np.nan) :
+        if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
             param_list = l.getBeamParam(tmp,ts[-1], E_min=50, E_max = 520,print_flag=True)
             emittance_y[f] = param_list[5]
             emittance_z[f] = param_list[6]
