@@ -254,14 +254,14 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print("")
                 print("--------------------------------------------")
                 print("")
-                print("Read \t\t\t",np.size(E)," particles")
-                print( "Iteration =\t\t\t ",iteration)
+                print("Read \t\t\t\t\t",np.size(E)," particles")
+                print( "Iteration =\t\t\t\t ",iteration)
                 print( "Simulation time =\t\t\t ",iteration*dt_adim*onel/c*1e15," fs")
-                print( "E_mean = \t\t\t",np.mean(E)*0.512," MeV")
+                print( "E_mean = \t\t\t\t",np.mean(E)*0.512," MeV")
                 print( "2*DeltaE_rms / E_mean = \t\t\t", np.std(E)/np.mean(E)*100 , " %.")
                 print( "Total charge = \t\t\t", Q, " pC.")
-                print( "Emittance_y = \t\t\t",emittancey," mm-mrad")
-                print( "Emittance_z = \t\t\t",emittancez," mm-mrad")
+                print( "Emittance_y = \t\t\t\t",emittancey," mm-mrad")
+                print( "Emittance_z = \t\t\t\t",emittancez," mm-mrad")
                 print( "divergence_rms = \t\t\t",divergence_rms*1e-3,"mrad")
                 print( "")
                 print( "--------------------------------------------")
@@ -464,8 +464,14 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
             Epeak = energy_axis[p[0]]
             Ewidth = peak_widths(specData, p, rel_height=0.5)[0][0]
         if print_flag == True:
+            print( "")
+            print( "--------------------------------------------")
+            print( "")
             print("beam Peak energy: \t",Epeak,"MeV")
             print("beam FWHM energy: \t",Ewidth,"MeV")
+            print( "")
+            print( "--------------------------------------------")
+            print( "")
 
     return energy_axis, specData, Epeak, Ewidth
 
