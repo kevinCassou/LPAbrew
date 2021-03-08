@@ -54,36 +54,69 @@ divergence_rms  = np.zeros([number_files])
 
 ## scanning the configuration
 for f in range(number_files):
-    # loading data 
-    print("")
-    print("--------------------------------------------")
-    print("")
-    print("loading data ...\n",
-    str(files[f]),"\n")
+    try: # SLK: continue postprocessing even in case of errors:
+        # loading data 
+        print("")
+        print("--------------------------------------------")
+        print("")
+        print("loading data ...\n",
+        str(files[f]),"\n")
 
-    tmp = l.loadData(str(files[f]))
-    # read configuration
-    Config[f] = tmp.namelist.config_external['Config']
-    n_e_1[f] = tmp.namelist.config_external['n_e_1']
-    r[f]= tmp.namelist.config_external['r']
-    l_1[f] = tmp.namelist.config_external['l_1']
-    x_foc[f] = tmp.namelist.config_external['x_foc']
-    c_N2[f] = tmp.namelist.config_external['c_N2']
-    x_foc_vac[f] = tmp.namelist.xfocus
-    # value and position of the max of a0 
-    x,a = l.getMaxinMovingWindow(tmp)
-    a0_max[f] = a.max()
-    x_a0_max[f] = x[a.argmax()]
+        tmp = l.loadData(str(files[f]))
+        # read configuration
+        Config[f] = tmp.namelist.config_external['Config']
+        n_e_1[f] = tmp.namelist.config_external['n_e_1']
+        r[f]= tmp.namelist.config_external['r']
+        l_1[f] = tmp.namelist.config_external['l_1']
+        x_foc[f] = tmp.namelist.config_external['x_foc']
+        c_N2[f] = tmp.namelist.config_external['c_N2']
+        x_foc_vac[f] = tmp.namelist.xfocus
+        # value and position of the max of a0 
+        x,a = l.getMaxinMovingWindow(tmp)
+        a0_max[f] = a.max()
+        x_a0_max[f] = x[a.argmax()]
 
-    # timesteps vector
-    ts = l.getPartAvailableSteps(tmp)
-    # injection timestep and position (m)
-    ti[f],xi[f] = l.getInjectionTime(tmp,ts)
-    if ti[f] == np.nan :
-        injection_flag[f] = False
-        print("#####################################\n",
-        '#\t no injection \n',
-        "#####################################")
+        # timesteps vector
+        ts = l.getPartAvailableSteps(tmp)
+        # injection timestep and position (m)
+        ti[f],xi[f] = l.getInjectionTime(tmp,ts)
+        if ti[f] == np.nan :
+            injection_flag[f] = False
+            print("#####################################\n",
+            '#\t no injection \n',
+            "#####################################")
+            ti[f] = np.nan
+            xi[f] = np.nan
+            E_fwhm[f] = np.nan
+            E_peak[f] = np.nan
+            emittance_y[f] = np.nan
+            emittance_z[f] = np.nan
+            divergence_rms[f] = np.nan
+            q_end[f] = np.nan
+        else :
+            injection_flag[f] = True
+        
+            # get electron spectrum at last timestep
+            energy_axis, spectrum, E_peak[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1],print_flag=True)
+            
+            # beam parameter filter around 
+            if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
+                param_list = l.getBeamParam(tmp,ts[-1], E_min=0, E_max = 520,print_flag=True)
+                E_peak[f] = param_list[2]
+                E_fwhm[f] = 2*np.sqrt(2*np.log(2))*param_list[3]
+                emittance_y[f] = param_list[5]
+                emittance_z[f] = param_list[6]
+                divergence_rms[f] = param_list[10]
+                q_end[f] = param_list[5]
+            else :
+                Emin = np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))
+                Emax = (E_peak[f]+2*E_fwhm[f])/0.512
+                param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax ,print_flag=True)
+                emittance_y[f] = param_list[5]
+                emittance_z[f] = param_list[6]
+                divergence_rms[f] = param_list[10]
+                q_end[f] = param_list[5]
+    except: # SLK:  in case of error fill values with nans and continue the postprocessing
         ti[f] = np.nan
         xi[f] = np.nan
         E_fwhm[f] = np.nan
@@ -92,29 +125,8 @@ for f in range(number_files):
         emittance_z[f] = np.nan
         divergence_rms[f] = np.nan
         q_end[f] = np.nan
-    else :
-        injection_flag[f] = True
-    
-        # get electron spectrum at last timestep
-        energy_axis, spectrum, E_peak[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1],print_flag=True)
-        
-        # beam parameter filter around 
-        if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
-            param_list = l.getBeamParam(tmp,ts[-1], E_min=0, E_max = 520,print_flag=True)
-            E_peak[f] = param_list[2]
-            E_fwhm[f] = 2*np.sqrt(2*np.log(2))*param_list[3]
-            emittance_y[f] = param_list[5]
-            emittance_z[f] = param_list[6]
-            divergence_rms[f] = param_list[10]
-            q_end[f] = param_list[5]
-        else :
-            Emin = np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))
-            Emax = (E_peak[f]+2*E_fwhm[f])/0.512
-            param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax ,print_flag=True)
-            emittance_y[f] = param_list[5]
-            emittance_z[f] = param_list[6]
-            divergence_rms[f] = param_list[10]
-            q_end[f] = param_list[5]
+        pass
+
 
 
 dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac, 'a0_max':a0_max,'x_a0_max':x_a0_max,
@@ -130,4 +142,4 @@ df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_foc_vac', 'a0_max','x_a0_
 # saving dataframe to csv
 df.to_csv('dataframe_bfscan.csv')
 
-print('')
+print('Post processing Ended')

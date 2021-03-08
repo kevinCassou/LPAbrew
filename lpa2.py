@@ -8,7 +8,8 @@
 ### loading module
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys
-import happi
+#import happi
+sys.path.append('/Users/cassou/Simulations/Smilei/scripts/Diagnostics.py')
 import numpy as np
 #import matplotlib
 #matplotlib.use('Agg')
