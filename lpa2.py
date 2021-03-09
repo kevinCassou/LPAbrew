@@ -324,8 +324,8 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
     iteration_to_plot : timestep 
     species_name : [electronfromion], electron
     horiz_axis_name : [E] can be px, p or E 
-    E_min : [0] min value considered in histogram for the horiz axis, in code units 
-    E_max : [500] max value considered in histogram for the horiz axis, in code units
+    E_min : [25] min value considered in histogram for the horiz axis, in code units 
+    E_max : [520] max value considered in histogram for the horiz axis, in code units
     peakSpectrum : numpy array with peak max energy value and FWHM of the peak. Shape is (len(binX),2) 
     return spectrum data as numpy arrays  (horizontal axis (E, or p)), dQd(E,or p), Epeak, dQdE_max, Ewidth 
     """
@@ -333,7 +333,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
 
     # histogram settings,
     normalized     = False
-    nbins_horiz    = 200
+    nbins_horiz    = 400
     
     #  horizontal axis limits (m_e c^2 units, or Lorentz factor)
     horiz_axis_min = E_min  # Max value considered in histogram for the horiz axis, in code units

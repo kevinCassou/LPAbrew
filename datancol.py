@@ -30,7 +30,7 @@ print("Number of configuration : \t", number_files)
 
 number_files = 10
 
-# initialization of arrays
+# initialization of arrays 400 is the binning in the histogram energy 
 Config          = np.zeros([number_files])
 n_e_1           = np.zeros([number_files])
 r               = np.zeros([number_files])
@@ -46,6 +46,8 @@ xi              = np.zeros([number_files])
 E_peak          = np.zeros([number_files])
 dQdE_max        = np.zeros([number_files])
 E_fwhm          = np.zeros([number_files])
+energy_axis     = np.zeros([number_files,400])
+spectrum        = np.zeros([number_files,400])
 q_end           = np.zeros([number_files])
 emittance_y     = np.zeros([number_files])
 emittance_z     = np.zeros([number_files])
@@ -98,22 +100,28 @@ for f in range(number_files):
             injection_flag[f] = True
         
             # get electron spectrum at last timestep
-            energy_axis, spectrum, E_peak[f], dQdE_max[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1],print_flag=True)
+            Emin = 50       # me c^2 unit 
+            Emax = 1000     # me c^2 unit
+            energy_axis[f], spectrum[f], E_peak[f], dQdE_max[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1], E_min=Emin, E_max = Emax, print_flag=True)
             
             # beam parameter filter around 
             if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
                 param_list = l.getBeamParam(tmp,ts[-1], E_min=0, E_max = 520,print_flag=True)
-                E_peak[f] = param_list[2]
-                E_fwhm[f] = 2*np.sqrt(2*np.log(2))*param_list[3]
+               E_std[f] = param_list[3]
+                E_peak[f] = np.nan
+                E_fwhm[f] = np.nan
+                E_std[f] = param_list[3]
                 dQdE_max[f] = spectrum.max()
                 emittance_y[f] = param_list[5]
                 emittance_z[f] = param_list[6]
                 divergence_rms[f] = param_list[10]
                 q_end[f] = param_list[5]
             else :
-                Emin = np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))
-                Emax = (E_peak[f]+2*E_fwhm[f])/0.512
+                Emin = 50   #   np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
+                Emax = 1000  #  (E_peak[f]+2*E_fwhm[f])/0.512@                  # me c^2 unit
                 param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax ,print_flag=True)
+                E_mean[f] = param_list[2]
+                E_std[f] = param_list[3]
                 emittance_y[f] = param_list[5]
                 emittance_z[f] = param_list[6]
                 divergence_rms[f] = param_list[10]
@@ -123,23 +131,28 @@ for f in range(number_files):
         xi[f] = np.nan
         E_fwhm[f] = np.nan
         E_peak[f] = np.nan
+        E_mean[f] = np.nan
+        E_std[f] = np.nan
         emittance_y[f] = np.nan
         emittance_z[f] = np.nan
         divergence_rms[f] = np.nan
         q_end[f] = np.nan
+        energy_axis[f] = np.nan
+        spectrum[f] = np.nan
         pass
 
 
 
-dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac, 'a0_max':a0_max,'x_a0_max':x_a0_max,
-'injection':injection_flag,'t_i': ti,'x_i':xi,'E_peak':E_peak,'E_fwhm':E_fwhm,
-'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'div_rms':divergence_rms}
+dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac,
+'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'E_mean':E_mean,'E_std':E_std,
+'E_peak':E_peak,'E_fwhm':E_fwhm,'dQdE_max':dQdE_max,'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'div_rms':divergence_rms,
+'ener_axis':energy_axis,'spec':spectrum}
 
 df = pd.DataFrame(dict_data)
 
 df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_foc_vac', 'a0_max','x_a0_max',
-'injection','t_i','x_i','E_peak','E_fwhm',
-'q_end','emit_y','emit_z','div_rms']]
+'injection','t_i','x_i','E_mean','E_std','E_peak','E_fwhm','dQdE_max',
+'q_end','emit_y','emit_z','div_rms','ener_axis','spec']]
 
 # saving dataframe to csv
 df.to_csv('dataframe_bfscan.csv')
