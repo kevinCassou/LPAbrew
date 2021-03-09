@@ -44,6 +44,7 @@ injection_flag  = np.zeros([number_files])
 ti              = np.zeros([number_files])
 xi              = np.zeros([number_files])
 E_peak          = np.zeros([number_files])
+dQdE_max        = np.zeros([number_files])
 E_fwhm          = np.zeros([number_files])
 q_end           = np.zeros([number_files])
 emittance_y     = np.zeros([number_files])
@@ -97,13 +98,14 @@ for f in range(number_files):
             injection_flag[f] = True
         
             # get electron spectrum at last timestep
-            energy_axis, spectrum, E_peak[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1],print_flag=True)
+            energy_axis, spectrum, E_peak[f], dQdE_max[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1],print_flag=True)
             
             # beam parameter filter around 
             if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
                 param_list = l.getBeamParam(tmp,ts[-1], E_min=0, E_max = 520,print_flag=True)
                 E_peak[f] = param_list[2]
                 E_fwhm[f] = 2*np.sqrt(2*np.log(2))*param_list[3]
+                dQdE_max[f] = spectrum.max()
                 emittance_y[f] = param_list[5]
                 emittance_z[f] = param_list[6]
                 divergence_rms[f] = param_list[10]

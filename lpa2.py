@@ -8,8 +8,8 @@
 ### loading module
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys
-#import happi
-sys.path.append('/Users/cassou/Simulations/Smilei/scripts/Diagnostics.py')
+import happi
+#sys.path.append('/Users/cassou/Simulations/Smilei/scripts/Diagnostics.py')
 import numpy as np
 #import matplotlib
 #matplotlib.use('Agg')
@@ -327,7 +327,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
     E_min : [0] min value considered in histogram for the horiz axis, in code units 
     E_max : [500] max value considered in histogram for the horiz axis, in code units
     peakSpectrum : numpy array with peak max energy value and FWHM of the peak. Shape is (len(binX),2) 
-    return spectrum data as numpy arrays  (horizontal axis (E, or p), dQd(E,or p), Epeak, Ewidth) 
+    return spectrum data as numpy arrays  (horizontal axis (E, or p)), dQd(E,or p), Epeak, dQdE_max, Ewidth 
     """
     #global specData
 
@@ -463,6 +463,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
             Ewidth = 0
         else :  
             Epeak = energy_axis[p[0]]
+            dQdE_max = specData[p[0]]
             Ewidth = peak_widths(specData, p, rel_height=0.5)[0][0]
         if print_flag == True:
             print( "")
@@ -474,7 +475,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
             print( "--------------------------------------------")
             print( "")
 
-    return energy_axis, specData, Epeak, Ewidth
+    return energy_axis, specData, Epeak, dQdE_max, Ewidth
 
 def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_size=100000000,print_flag = True):
     """return x,y,z,px,py,pz,E,w,p for all particle at timesteps iteration within the filter"""
