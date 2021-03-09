@@ -46,6 +46,8 @@ xi              = np.zeros([number_files])
 E_peak          = np.zeros([number_files])
 dQdE_max        = np.zeros([number_files])
 E_fwhm          = np.zeros([number_files])
+E_mean          = np.zeros([number_files])
+E_std           = np.zeros([number_files])
 energy_axis     = np.zeros([number_files,400])
 spectrum        = np.zeros([number_files,400])
 q_end           = np.zeros([number_files])
@@ -107,7 +109,7 @@ for f in range(number_files):
             # beam parameter filter around 
             if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
                 param_list = l.getBeamParam(tmp,ts[-1], E_min=0, E_max = 520,print_flag=True)
-               E_std[f] = param_list[3]
+                E_std[f] = param_list[3]
                 E_peak[f] = np.nan
                 E_fwhm[f] = np.nan
                 E_std[f] = param_list[3]
