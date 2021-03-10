@@ -176,6 +176,8 @@ for f in range(number_files):
 
 df['ener_axis'] = tmp_e
 df['spec'] = tmp_s
+df['x_p'] = tmp_x
+df['n_e_p'] = tmp_ne
 
 
 # saving dataframe to pickle
