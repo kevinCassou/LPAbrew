@@ -40,6 +40,8 @@ c_N2            = np.zeros([number_files])
 x_foc_vac       = np.zeros([number_files])
 a0_max          = np.zeros([number_files])
 x_a0_max        = np.zeros([number_files])
+x_p             = np.zeros([number_files],12)
+n_e_p           = np.zeros([number_files],12)
 injection_flag  = np.zeros([number_files])
 ti              = np.zeros([number_files])
 xi              = np.zeros([number_files])
@@ -54,6 +56,7 @@ q_end           = np.zeros([number_files])
 emittance_y     = np.zeros([number_files])
 emittance_z     = np.zeros([number_files])
 divergence_rms  = np.zeros([number_files])
+zeros_vector    = np.zeros([number_files])  
 
 
 
@@ -80,6 +83,10 @@ for f in range(number_files):
         x,a = l.getMaxinMovingWindow(tmp)
         a0_max[f] = a.max()
         x_a0_max[f] = x[a.argmax()]
+
+        # plasma profile
+        x_p = tmp.namelist.xr
+        n_e_p = tmp.namelist.ner
 
         # timesteps vector
         ts = l.getPartAvailableSteps(tmp)
@@ -108,7 +115,7 @@ for f in range(number_files):
             
             # beam parameter filter around 
             if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
-                param_list = l.getBeamParam(tmp,ts[-1], E_min=0, E_max = 520,print_flag=True)
+                param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax,print_flag=True)
                 E_std[f] = param_list[3]
                 E_peak[f] = np.nan
                 E_fwhm[f] = np.nan
@@ -117,7 +124,7 @@ for f in range(number_files):
                 emittance_y[f] = param_list[5]
                 emittance_z[f] = param_list[6]
                 divergence_rms[f] = param_list[10]
-                q_end[f] = param_list[5]
+                q_end[f] = param_list[4]
             else :
                 Emin = 50   #   np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
                 Emax = 1000  #  (E_peak[f]+2*E_fwhm[f])/0.512@                  # me c^2 unit
@@ -127,7 +134,7 @@ for f in range(number_files):
                 emittance_y[f] = param_list[5]
                 emittance_z[f] = param_list[6]
                 divergence_rms[f] = param_list[10]
-                q_end[f] = param_list[5]
+                q_end[f] = param_list[4]
     except: # SLK:  in case of error fill values with nans and continue the postprocessing
         ti[f] = np.nan
         xi[f] = np.nan
@@ -148,15 +155,29 @@ for f in range(number_files):
 dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac,
 'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'E_mean':E_mean,'E_std':E_std,
 'E_peak':E_peak,'E_fwhm':E_fwhm,'dQdE_max':dQdE_max,'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'div_rms':divergence_rms,
-'ener_axis':energy_axis,'spec':spectrum}
+'ener_axis':zeros_vector,'spec':zeros_vector,'x_p':zeros_vector,'n_e_p':zeros_vector}
 
 df = pd.DataFrame(dict_data)
 
-df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_foc_vac', 'a0_max','x_a0_max',
+df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_p','n_e_p','x_foc_vac', 'a0_max','x_a0_max',
 'injection','t_i','x_i','E_mean','E_std','E_peak','E_fwhm','dQdE_max',
 'q_end','emit_y','emit_z','div_rms','ener_axis','spec']]
 
-# saving dataframe to csv
-df.to_csv('dataframe_bfscan.csv')
+# saving dataframe to changing 2D ndarray to list of array to avoid trouble opening the dataframe 
+tmp_e = []
+tmp_s = []
+tmp_x = []
+tmp_ne = []
+for f in range(number_files):
+    tmp_e.append(energy_axis[f])
+    tmp_s.append(spectrum[f])
+    tmp_x.
+
+df['ener_axis'] = tmp_e
+df['spec'] = tmp_s
+
+
+# saving dataframe to pickle
+df.to_pickle('dataframe_bfscan.pickle')
 
 print('Post processing Ended')
