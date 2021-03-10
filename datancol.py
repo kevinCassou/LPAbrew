@@ -85,8 +85,8 @@ for f in range(number_files):
         x_a0_max[f] = x[a.argmax()]
 
         # plasma profile
-        x_p = tmp.namelist.xr
-        n_e_p = tmp.namelist.ner
+        x_p[f] = tmp.namelist.xr
+        n_e_p[f] = tmp.namelist.ner
 
         # timesteps vector
         ts = l.getPartAvailableSteps(tmp)
@@ -171,7 +171,8 @@ tmp_ne = []
 for f in range(number_files):
     tmp_e.append(energy_axis[f])
     tmp_s.append(spectrum[f])
-    tmp_x.
+    tmp_x.append(x_p[f])
+    tmp_ne.append(n_e_p[f])
 
 df['ener_axis'] = tmp_e
 df['spec'] = tmp_s
