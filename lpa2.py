@@ -241,7 +241,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 emittancez = np.sqrt(emittancez) * onel * 1e6 # [mm mrad]
             else:
                 emittancez = 0.
-                emittance_transverse = np.sqrt(emittancey**2+emittancez**2) # [mm mrad]
+                #emittance_transverse = np.sqrt(emittancey**2+emittancez**2) # [mm mrad]
 
             rmssize_longitudinal = 2*np.sqrt(x2_moy) * onel * 1e6 # [micron]
             rmssize_y =            2*np.sqrt(y2_moy) * onel * 1e6 # [micron]
@@ -345,7 +345,6 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
     track_part = S.TrackParticles(species = species_name, sort = sort, chunksize=chunk_size)
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
     
-    dt_adim    = S.namelist.dt
     for particle_chunk in track_part.iterParticles(iteration_to_plot, chunksize=chunk_size):
         # Read data
         #if print_flag==True:
@@ -433,7 +432,6 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
         if plot_flag == True:
             fig = plt.figure()
             fig.set_facecolor('w')
-            ax=plt.gca()
 
             plt.xlabel(horiz_axis_name+" (MeV)")
             plt.title(plot_title)
@@ -481,7 +479,7 @@ def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_si
     """return x,y,z,px,py,pz,E,w,p for all particle at timesteps iteration within the filter"""
     track_part = S.TrackParticles(species = species_name,sort = sort,  chunksize=chunk_size)
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
-    dt_adim    = S.namelist.dt
+
     for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
         # Read data
         #if print_flag==True:
