@@ -211,6 +211,7 @@ for f in range(number_files):
             else :
                 #  only the given final step value timeStep
                 # laser self-focusing
+                print('DEBUG every_step not working')
                 x,a = l.getMaxinMovingWindow(tmp)
                 a0_max[f] = a.max()
                 x_a0_max[f] = x[a.argmax()]
