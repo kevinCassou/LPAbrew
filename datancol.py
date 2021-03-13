@@ -121,6 +121,7 @@ for f in range(number_files):
         ts = l.getPartAvailableSteps(tmp)
         # injection timestep and position (m)
         ti[f],xi[f] = l.getInjectionTime(tmp,ts)
+
         if ti[f] == np.nan :
             injection_flag[f] = False
             print("#####################################\n",
@@ -139,6 +140,7 @@ for f in range(number_files):
             print("#####################################\n",
             '#\t  injection occured at:\t',ti[f],' \n',
             "#####################################")
+
             # get electron spectrum at last timestep
             Emin = 50       # me c^2 unit 
             Emax = 1000     # me c^2 unit
@@ -147,8 +149,8 @@ for f in range(number_files):
             if every_step == True:
                 # timestep from ionization
                 tsi = ts[ti:]
-                vec_len = len(tsi)
-                print(vec_len)
+                vec_len = tsi.shape
+                print(' DEUBG shape :', vec_len)
                 vec_a0_max          = np.zeros([vec_len])
                 vec_x_a0_max        = np.zeros([vec_len])
                 vec_E_peak          = np.zeros([vec_len])
