@@ -76,7 +76,7 @@ else :
     print("")
     print("--------------------------------------------")
     print("")
-    print("Post-processing timeStep all timeStep from injection")
+    print("Post-processing :  all timeStep from injection")
     print("")
     print("--------------------------------------------")
     print("")
@@ -137,7 +137,7 @@ for f in range(number_files):
         else :
             injection_flag[f] = True
             print("#####################################\n",
-            '#\t  injection occured at:\t',ti,' \n',
+            '#\t  injection occured at:\t',ti[f],' \n',
             "#####################################")
             # get electron spectrum at last timestep
             Emin = 50       # me c^2 unit 
@@ -146,6 +146,7 @@ for f in range(number_files):
                 # timestep from ionization
                 tsi = ts[ti:]
                 vec_len = len(tsi)
+                print(vec_len)
                 vec_a0_max          = np.zeros([vec_len])
                 vec_x_a0_max        = np.zeros([vec_len])
                 vec_E_peak          = np.zeros([vec_len])
