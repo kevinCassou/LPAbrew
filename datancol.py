@@ -208,7 +208,12 @@ for f in range(number_files):
                 divergence_rms.append(vec_divergence_rms)
             else :
                 #  only the given final step value timeStep
-                energy_axis[f], spectrum[f], E_peak[f], dQdE_max[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[-1], E_min=Emin, E_max = Emax, print_flag=True)
+                # laser self-focusing
+                x,a = l.getMaxinMovingWindow(tmp)
+                a0_max[f] = a.max()
+                x_a0_max[f] = x[a.argmax()]
+                # energy distribution 
+                energy_axis[f], spectrum[f], E_peak[f], dQdE_max[f], E_fwhm[f]  = l.getSpectrum(tmp,ts[timeStep], E_min=Emin, E_max = Emax, print_flag=True)
                 # beam parameter filter around 
                 if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
                     param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax,print_flag=True)
@@ -231,23 +236,25 @@ for f in range(number_files):
                     emittance_z[f] = param_list[6]
                     divergence_rms[f] = param_list[10]
                     q_end[f] = param_list[4]
+
     except: # SLK:  in case of error fill values with nans and continue the postprocessing
         ti[f] = np.nan
         xi[f] = np.nan
         energy_axis[f] = np.nan
-        if every_step == True :
-                spectrum.append(np.nan)
-                E_peak.append(np.nan)
-                dQdE_max.append(np.nan)
-                E_mean.append(np.nan)
-                E_std.append(np.nan)
-                E_fwhm.append(np.nan)
-                emittance_y.append(np.nan)
-                emittance_z.append(np.nan)
-                divergence_rms.append(np.nan)
-                q_end.append(np.nan)
-                print('################# DEBUG ####################')
-                print("\t spec,q,ener ",len(spectrum),len(q_end),len(energy_axis))
+
+        # if every_step == True :
+        #     spectrum.append(np.nan)
+        #     E_peak.append(np.nan)
+        #     dQdE_max.append(np.nan)
+        #     E_mean.append(np.nan)
+        #     E_std.append(np.nan)
+        #     E_fwhm.append(np.nan)
+        #     emittance_y.append(np.nan)
+        #     emittance_z.append(np.nan)
+        #     divergence_rms.append(np.nan)
+        #     q_end.append(np.nan)
+        #     print('################# DEBUG ####################')
+        #     print("\t spec,q,ener ",len(spectrum),len(q_end),len(energy_axis))
  
         else :
             spectrum[f] = np.nan 
