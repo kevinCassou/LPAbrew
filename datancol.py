@@ -142,6 +142,7 @@ for f in range(number_files):
             # get electron spectrum at last timestep
             Emin = 50       # me c^2 unit 
             Emax = 1000     # me c^2 unit
+            print('everys_step:',every_step)
             if every_step == True :
                 # timestep from ionization
                 tsi = ts[ti:]
