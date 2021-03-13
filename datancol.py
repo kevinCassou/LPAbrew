@@ -143,7 +143,8 @@ for f in range(number_files):
             Emin = 50       # me c^2 unit 
             Emax = 1000     # me c^2 unit
             print('everys_step:',every_step)
-            if every_step == True :
+
+            if every_step == True:
                 # timestep from ionization
                 tsi = ts[ti:]
                 vec_len = len(tsi)
@@ -245,6 +246,8 @@ for f in range(number_files):
                 emittance_z.append(np.nan)
                 divergence_rms.append(np.nan)
                 q_end.append(np.nan)
+                print('################# DEBUG ####################')
+                print("\t,spec,q,ener ",len(spectrum),len(q_end),len(energy_axis))
  
         else :
             spectrum[f] = np.nan 
