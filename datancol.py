@@ -101,8 +101,7 @@ for f in range(number_files):
         print("")
         print("--------------------------------------------")
         print("")
-        print("loading data ...\n",
-        str(files[f]),"\n")
+        print("loading data ...\n",str(files[f]),"\n")
 
         tmp = l.loadData(str(files[f]))
         # read configuration
@@ -232,16 +231,31 @@ for f in range(number_files):
     except: # SLK:  in case of error fill values with nans and continue the postprocessing
         ti[f] = np.nan
         xi[f] = np.nan
-        E_fwhm[f] = np.nan
-        E_peak[f] = np.nan
-        E_mean[f] = np.nan
-        E_std[f] = np.nan
-        emittance_y[f] = np.nan
-        emittance_z[f] = np.nan
-        divergence_rms[f] = np.nan
-        q_end[f] = np.nan
         energy_axis[f] = np.nan
-        spectrum[f] = np.nan
+        if every_step == True :
+                spectrum.append(np.nan)
+                E_peak.append(np.nan)
+                dQdE_max.append(np.nan)
+                E_mean.append(np.nan)
+                E_std.append(np.nan)
+                E_fwhm.append(np.nan)
+                emittance_y.append(np.nan)
+                emittance_z.append(np.nan)
+                divergence_rms.append(np.nan)
+                q_end.append(np.nan)
+ 
+        else :
+            spectrum[f] = np.nan 
+            E_peak[f] = np.nan
+            dQdE_max[f] =  np.nan
+            E_mean[f] = np.nan
+            E_std[f] = np.nan
+            E_fwhm[f] = np.nan
+            emittance_y[f] = np.nan
+            emittance_z[f] = np.nan
+            divergence_rms[f] = np.nan
+            q_end[f] = np.nan
+
         pass
 
 
