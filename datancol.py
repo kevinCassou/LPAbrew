@@ -238,9 +238,9 @@ for f in range(number_files):
                     q_end[f] = param_list[4]
 
     except: # SLK:  in case of error fill values with nans and continue the postprocessing
-        ti[f] = np.nan
-        xi[f] = np.nan
-        energy_axis[f] = np.nan
+        # ti[f] = np.nan
+        # xi[f] = np.nan
+        # energy_axis[f] = np.nan
 
         # if every_step == True :
         #     spectrum.append(np.nan)
