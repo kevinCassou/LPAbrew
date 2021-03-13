@@ -287,29 +287,32 @@ if every_step == True:
     tmp_ne = []
     print('################# DEBUG ####################')
     print("\t size dataframe:",df.shape)
+    print("\t ener_axis",energy_axis)
 
     for f in range(number_files):
         tmp_e.append(energy_axis[f])
         tmp_x.append(x_p[f])
         tmp_ne.append(n_e_p[f])
 
-        df['ener_axis'] = tmp_e
-        df['x_p']       = tmp_x
-        df['n_e_p']     = tmp_ne
-        df['spec']      = spectrum[f]
-        df['x_p']       = x_p
-        df['n_e_p']     = n_e_p
-        df['a0_max']    = a0_max[f]
-        df['x_a0_max']  = x_a0_max[f]    
-        df['E_peak']    = E_peak[f]  
-        df['dQdE_max']  = dQdE_max[f]
-        df['E_fwhm']    = E_fwhm[f]
-        df['E_mean']    = E_mean[f]
-        df['E_std']     = E_std[f]
-        df['q_end']     = q_end[f]
-        df['emittance_y']  = emittance_y[f]
-        df['emitance_z'] = emittance_z[f]
-        df['divergence_rms'] = divergence_rms[f]
+        print('tmp_e',tmp_e)
+        df['spec'].iloc[f]      = spectrum[f]
+        df['a0_max'].iloc[f]     = a0_max[f]
+        df['x_a0_max'].iloc[f]   = x_a0_max[f]    
+        df['E_peak'].iloc[f]     = E_peak[f]  
+        df['dQdE_max'].iloc[f]   = dQdE_max[f]
+        df['E_fwhm'].iloc[f]     = E_fwhm[f]
+        df['E_mean'].iloc[f]    = E_mean[f]
+        df['E_std'].iloc[f]      = E_std[f]
+        df['q_end'].iloc[f]      = q_end[f]
+        df['emittance_y'].iloc[f]   = emittance_y[f]
+        df['emitance_z'].iloc[f]  = emittance_z[f]
+        df['divergence_rms'].iloc[f]  = divergence_rms[f]
+             
+    df['ener_axis'] = tmp_e
+    df['x_p']       = tmp_x
+    df['n_e_p']     = tmp_ne
+
+
 
 else: 
 
@@ -332,10 +335,10 @@ else:
         tmp_x.append(x_p[f])
         tmp_ne.append(n_e_p[f])
 
-        df['ener_axis'] = tmp_e
-        df['spec'] = tmp_s
-        df['x_p'] = tmp_x
-        df['n_e_p'] = tmp_ne
+    df['ener_axis'] = tmp_e
+    df['spec'] = tmp_s
+    df['x_p'] = tmp_x
+    df['n_e_p'] = tmp_ne
 
 
 # saving dataframe to pickle
