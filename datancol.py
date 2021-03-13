@@ -256,17 +256,17 @@ for f in range(number_files):
         #     print('################# DEBUG ####################')
         #     print("\t spec,q,ener ",len(spectrum),len(q_end),len(energy_axis))
  
-        else :
-            spectrum[f] = np.nan 
-            E_peak[f] = np.nan
-            dQdE_max[f] =  np.nan
-            E_mean[f] = np.nan
-            E_std[f] = np.nan
-            E_fwhm[f] = np.nan
-            emittance_y[f] = np.nan
-            emittance_z[f] = np.nan
-            divergence_rms[f] = np.nan
-            q_end[f] = np.nan
+        # else :
+        #     spectrum[f] = np.nan 
+        #     E_peak[f] = np.nan
+        #     dQdE_max[f] =  np.nan
+        #     E_mean[f] = np.nan
+        #     E_std[f] = np.nan
+        #     E_fwhm[f] = np.nan
+        #     emittance_y[f] = np.nan
+        #     emittance_z[f] = np.nan
+        #     divergence_rms[f] = np.nan
+        #     q_end[f] = np.nan
 
         pass
 
