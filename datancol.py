@@ -171,7 +171,7 @@ for f in range(number_files):
                     vec_x_a0_max[t] = x[a.argmax()]
                     # energy distribution characteristics 
                     energy_axis[f], vec_spectrum[t], vec_E_peak[t], vec_dQdE_max[t], vec_E_fwhm[t]  = l.getSpectrum(tmp,tsi[t], E_min=Emin, E_max = Emax, print_flag=True)
-                    # beam parameter filter around 
+                    # beam parameter filter around energy peak 
                     if (vec_E_peak[t] == 0) or (vec_E_fwhm[t] == 0) :
                         param_list = l.getBeamParam(tmp,ts[t], E_min=Emin, E_max = Emax,print_flag=True)
                         vec_E_std[t] = param_list[3]
@@ -247,7 +247,7 @@ for f in range(number_files):
                 divergence_rms.append(np.nan)
                 q_end.append(np.nan)
                 print('################# DEBUG ####################')
-                print("\t,spec,q,ener ",len(spectrum),len(q_end),len(energy_axis))
+                print("\t spec,q,ener ",len(spectrum),len(q_end),len(energy_axis))
  
         else :
             spectrum[f] = np.nan 
@@ -285,6 +285,8 @@ if every_step == True:
     tmp_s = []
     tmp_x = []
     tmp_ne = []
+    print('################# DEBUG ####################')
+    print("\t size dataframe:",df.shape)
 
     for f in range(number_files):
         tmp_e.append(energy_axis[f])
