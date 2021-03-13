@@ -146,10 +146,11 @@ for f in range(number_files):
             Emax = 1000     # me c^2 unit
             print('everys_step:',every_step)
             tsi = ts[ti:]
+            print(tsi)
             vec_len = tsi.shape
             print(' DEUBG shape :', vec_len)
 
-            if every_step == True:
+            if every_step == True :
                 # timestep from ionization
                 tsi = ts[ti:]
                 vec_len = tsi.shape
