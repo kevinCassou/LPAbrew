@@ -309,14 +309,14 @@ def getInjectionTime(S,ts,specie='Rho_electronfromion',threshold = 1e-4,print_fl
         if np.abs(rhoei.min())> threshold:
             ti = ts[t]
             xi = ts[t]*dls
-            #print('index:', t)
+            #print('index:', t
             #print('injection time:',ti,'timestep')
             #print('injection x:',xi,'mm')
             break
         else :
-            ti = np.nan
-            xi = np.nan
-    return ti,xi
+            ti = None
+            xi = None
+    return t,ti,xi
 
 def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_name= "E", sort = False, chunk_size=100000000,E_min=25, E_max = 520,plot_flag = False, print_flag = False):
     """ return spectrum plot or data for a given timesteps
