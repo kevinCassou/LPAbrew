@@ -251,7 +251,7 @@ for f in range(number_files):
     df['q_end'].iloc[f]             = q_end[f].astype(object)
     df['emit_y'].iloc[f]            = emittance_y[f].astype(object)
     df['emit_z'].iloc[f]            = emittance_z[f].astype(object)
-    df['divergence_rms'].iloc[f]    = divergence_rms[f].astype(object)
+    df['div_rms'].iloc[f]    = divergence_rms[f].astype(object)
             
 df['ener_axis'] = tmp_e
 df['x_p']       = tmp_x
