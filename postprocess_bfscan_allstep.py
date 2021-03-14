@@ -239,7 +239,7 @@ for f in range(number_files):
     tmp_e.append(energy_axis[f])
     tmp_x.append(x_p[f])
     tmp_ne.append(n_e_p[f])
-    print(spectrum.shape)
+    print(len(spectrum))
     df['spec'].iloc[f]      = spectrum[f].astype(object)
     df['a0_max'].iloc[f]     = a0_max[f].astype(object)
     df['x_a0_max'].iloc[f]   = x_a0_max[f].astype(object) 
