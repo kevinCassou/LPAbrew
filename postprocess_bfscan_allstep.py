@@ -110,7 +110,7 @@ for f in range(number_files):
         Emax = 1000         # me c^2 unit
 
         # timestep from ionization
-        tsi = ts[int(ti):-1]
+        tsi = ts[int(indi[f]):-1]
         vec_len = tsi.shape[0]
         print(' DEUBG shape :', vec_len)
         vec_a0_max          = np.zeros([vec_len])
