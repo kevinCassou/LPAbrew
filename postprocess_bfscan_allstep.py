@@ -140,17 +140,28 @@ for f in range(number_files):
 
             # beam parameter filter around energy peak 
             if (vec_E_peak[t] == 0) or (vec_E_fwhm[t] == 0) :
-                param_list = l.getBeamParam(tmp,ts[t], E_min=Emin, E_max = Emax,print_flag=True)
-                print('DEBUG :\n',param_list)
-                vec_E_std[t] = param_list[3]
-                vec_E_peak[t] = np.nan
-                vec_E_fwhm[t] = np.nan
-                vec_E_std[t] = param_list[3]
-                vec_dQdE_max[t] = vec_spectrum.max()
-                vec_emittance_y[t] = param_list[5]
-                vec_emittance_z[t] = param_list[6]
-                vec_divergence_rms[t] = param_list[10]
-                vec_q_end[t] = param_list[4]
+                try:
+                    param_list = l.getBeamParam(tmp,ts[t], E_min=Emin, E_max = Emax,print_flag=True)
+                    print('DEBUG :\n',param_list)
+                    vec_E_std[t] = param_list[3]
+                    vec_E_peak[t] = np.nan
+                    vec_E_fwhm[t] = np.nan
+                    vec_E_std[t] = param_list[3]
+                    vec_dQdE_max[t] = vec_spectrum.max()
+                    vec_emittance_y[t] = param_list[5]
+                    vec_emittance_z[t] = param_list[6]
+                    vec_divergence_rms[t] = param_list[10]
+                    vec_q_end[t] = param_list[4]
+                except param_list == None:
+                    vec_E_std[t] = np.nan
+                    vec_E_peak[t] = np.nan
+                    vec_E_fwhm[t] = np.nan
+                    vec_E_std[t] = np.nan
+                    vec_dQdE_max[t] = np.nan
+                    vec_emittance_y[t] = np.nan
+                    vec_emittance_z[t] = np.nan
+                    vec_divergence_rms[t] = np.nan
+                    vec_q_end[t] = np.nan
             else :
                 #Emin =  np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
                 #Emax = (E_peak[f]+2*E_fwhm[f])/0.512                  # me c^2 unit
