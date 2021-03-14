@@ -453,17 +453,23 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
             plt.show()
     
         # compute the full width half maximum using scipy.signal.findpeaks 
-        
-        prom = (np.nanmax(specData)-np.nanmin(specData))*0.66 #factor might be adjusted 
-        p , _  = find_peaks(specData,prominence=prom)
-        if len(p)==0 :
-            Epeak = 0
-            Ewidth = 0
-            dQdE_max = 0
-        else :  
-            Epeak = energy_axis[p[0]]
-            dQdE_max = specData[p[0]]
-            Ewidth = peak_widths(specData, p, rel_height=0.5)[0][0]
+        try :
+            prom = (np.nanmax(specData)-np.nanmin(specData))*0.66 #factor might be adjusted 
+            p , _  = find_peaks(specData,prominence=prom)
+            if len(p)==0 :
+                Epeak = 0
+                Ewidth = 0
+                dQdE_max = 0
+            else :  
+                Epeak = energy_axis[p[0]]
+                dQdE_max = specData[p[0]]
+                Ewidth = peak_widths(specData, p, rel_height=0.5)[0][0]
+            except :
+                Epeak = np.nan
+                Ewidth = np.nan
+                dQdE_max = np.nan 
+                pass
+            
         if print_flag == True:
             print( "")
             print( "--------------------------------------------")
