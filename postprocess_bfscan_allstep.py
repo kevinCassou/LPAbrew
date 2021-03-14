@@ -28,7 +28,7 @@ print("Number of configuration : \t", number_files)
 
 # for test, comment for postprocessing
 
-number_files = 10
+number_files = 3
 
 # initialization of arrays 400 is the binning in the histogram energy 
 
@@ -239,20 +239,19 @@ for f in range(number_files):
     tmp_e.append(energy_axis[f])
     tmp_x.append(x_p[f])
     tmp_ne.append(n_e_p[f])
-
-    print('tmp_e',tmp_e)
-    df['spec'].iloc[f]      = spectrum[f]
-    df['a0_max'].iloc[f]     = a0_max[f]
-    df['x_a0_max'].iloc[f]   = x_a0_max[f]    
-    df['E_peak'].iloc[f]     = E_peak[f]  
-    df['dQdE_max'].iloc[f]   = dQdE_max[f]
-    df['E_fwhm'].iloc[f]     = E_fwhm[f]
-    df['E_mean'].iloc[f]    = E_mean[f]
-    df['E_std'].iloc[f]      = E_std[f]
-    df['q_end'].iloc[f]      = q_end[f]
-    df['emittance_y'].iloc[f]   = emittance_y[f]
-    df['emitance_z'].iloc[f]  = emittance_z[f]
-    df['divergence_rms'].iloc[f]  = divergence_rms[f]
+    print(spectrum.shape)
+    df['spec'].iloc[f]      = spectrum[f].astype(object)
+    df['a0_max'].iloc[f]     = a0_max[f].astype(object)
+    df['x_a0_max'].iloc[f]   = x_a0_max[f].astype(object) 
+    df['E_peak'].iloc[f]     = E_peak[f].astype(object)
+    df['dQdE_max'].iloc[f]   = dQdE_max[f].astype(object)
+    df['E_fwhm'].iloc[f]     = E_fwhm[f].astype(object)
+    df['E_mean'].iloc[f]    = E_mean[f].astype(object)
+    df['E_std'].iloc[f]      = E_std[f].astype(object)
+    df['q_end'].iloc[f]      = q_end[f].astype(object)
+    df['emittance_y'].iloc[f]   = emittance_y[f].astype(object)
+    df['emitance_z'].iloc[f]  = emittance_z[f].astype(object)
+    df['divergence_rms'].iloc[f]  = divergence_rms[f].astype(object)
             
 df['ener_axis'] = tmp_e
 df['x_p']       = tmp_x
