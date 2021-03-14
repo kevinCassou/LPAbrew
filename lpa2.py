@@ -124,7 +124,7 @@ def getLaserPulselength(S,timeStep,var='Env_E_abs'):
     a_val = temp[:,y_max]
     x_val = np.arange(0,temp.shape[0],1)
     # gaussian fit slightly underestimate FWHM value
-    best_vals, covar = curve_fit(gaussian, x_val, a_val, p0=init_vals)
+    best_vals, _ = curve_fit(gaussian, x_val, a_val, p0=init_vals)
     return best_vals[2]*2*np.sqrt(2*np.log(2))
 
 

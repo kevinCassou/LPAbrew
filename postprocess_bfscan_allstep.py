@@ -106,8 +106,8 @@ for f in range(number_files):
         "#####################################")
 
         # electron spectrum distribution bining min and max 
-        Emin = 50       # me c^2 unit 
-        Emax = 1000     # me c^2 unit
+        Emin = 50           # me c^2 unit 
+        Emax = 1000         # me c^2 unit
 
         # timestep from ionization
         tsi = ts[ti:]
