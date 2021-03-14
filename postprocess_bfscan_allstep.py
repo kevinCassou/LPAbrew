@@ -152,7 +152,7 @@ for f in range(number_files):
                     vec_emittance_z[t] = param_list[6]
                     vec_divergence_rms[t] = param_list[10]
                     vec_q_end[t] = param_list[4]
-                except param_list == None:
+                except TypeError :
                     vec_E_std[t] = np.nan
                     vec_E_peak[t] = np.nan
                     vec_E_fwhm[t] = np.nan
