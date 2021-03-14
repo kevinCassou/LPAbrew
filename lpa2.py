@@ -459,6 +459,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
         if len(p)==0 :
             Epeak = 0
             Ewidth = 0
+            dQdE_max = 0
         else :  
             Epeak = energy_axis[p[0]]
             dQdE_max = specData[p[0]]

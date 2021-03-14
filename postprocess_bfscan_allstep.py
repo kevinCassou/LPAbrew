@@ -42,6 +42,7 @@ x_foc_vac       = np.zeros([number_files])
 x_p             = np.zeros([number_files,12])
 n_e_p           = np.zeros([number_files,12])
 injection_flag  = np.zeros([number_files])
+indi              = np.zeros([number_files])
 ti              = np.zeros([number_files])
 xi              = np.zeros([number_files])
 zeros_vector    = np.zeros([number_files]) 
@@ -96,7 +97,8 @@ for f in range(number_files):
         ts = l.getPartAvailableSteps(tmp)
 
         # injection timestep and position (m)
-        ti[f],xi[f] = l.getInjectionTime(tmp,ts)
+        ind,ti[f],xi[f] = l.getInjectionTime(tmp,ts)
+        indi[f] = int(ind)
         injection_flag[f] = True
 
         print("#####################################\n",
