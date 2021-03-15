@@ -227,19 +227,13 @@ df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_p','n_e_p','x_foc_vac', '
 'injection','t_i','x_i','E_mean','E_std','E_peak','E_fwhm','dQdE_max',
 'q_end','emit_y','emit_z','div_rms','ener_axis','spec']]
 
-tmp_e = []
-tmp_s = []
-tmp_x = []
-tmp_ne = []
 print('################# DEBUG ####################')
 print("\t size dataframe:",df.shape)
-print("\t ener_axis",energy_axis)
 
 for f in range(number_files):
-    tmp_e.append(energy_axis[f])
-    tmp_x.append(x_p[f])
-    tmp_ne.append(n_e_p[f])
-    print(len(spectrum))
+    df['ener_axis'].iloc[f]         = energy_axis[f].astype(object)
+    df['x_p'].iloc[f]               = x_p[f].astype(object)
+    df['n_e_p'].iloc[f]             = n_e_p[f].astype(object)
     df['spec'].iloc[f]              = spectrum[f].astype(object)
     df['a0_max'].iloc[f]            = a0_max[f].astype(object)
     df['x_a0_max'].iloc[f]          = x_a0_max[f].astype(object) 
@@ -251,12 +245,8 @@ for f in range(number_files):
     df['q_end'].iloc[f]             = q_end[f].astype(object)
     df['emit_y'].iloc[f]            = emittance_y[f].astype(object)
     df['emit_z'].iloc[f]            = emittance_z[f].astype(object)
-    df['div_rms'].iloc[f]    = divergence_rms[f].astype(object)
+    df['div_rms'].iloc[f]           = divergence_rms[f].astype(object)
             
-df['ener_axis'] = tmp_e
-df['x_p']       = tmp_x
-df['n_e_p']     = tmp_ne
-
 # saving dataframe to pickle
 df.to_pickle('dataframe_bfscan.pickle')
 
