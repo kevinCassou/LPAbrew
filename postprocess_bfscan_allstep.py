@@ -132,7 +132,7 @@ for f in range(number_files):
         for t in range(len(tsi)):
             print('file:\t',f,' \t timestep:\t',t)
             # value and position of the max of a0 
-            vec_a0[t] = l.getLasera0(tmp,ts[t])
+            vec_a0[t] = l.getLasera0(tmp,tsi[t])
             vec_x_a[t] = tsi[t]*tmp.namelist.onel
             
             # energy distribution characteristics 
