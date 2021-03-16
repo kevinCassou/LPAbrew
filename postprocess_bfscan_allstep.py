@@ -28,7 +28,7 @@ print("Number of configuration : \t", number_files)
 
 # for test, comment for postprocessing
 
-number_files = 3
+number_files = 10
 
 # initialization of arrays 400 is the binning in the histogram energy 
 
@@ -110,7 +110,7 @@ for f in range(number_files):
         Emax = 1000         # me c^2 unit
 
         # timestep from ionization
-        tsi = ts[int(indi[f]):-1]
+        tsi = ts[int(indi[f]+1):-1]
         vec_len = tsi.shape[0]
         print(' DEUBG shape :', vec_len)
         vec_a0_max          = np.zeros([vec_len])
@@ -141,8 +141,8 @@ for f in range(number_files):
             # beam parameter filter around energy peak 
             if (vec_E_peak[t] == 0) or (vec_E_fwhm[t] == 0) :
                 try:
-                    param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax,print_flag=True)
-                    print('DEBUG :\n',param_list)
+                    param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax,print_flag=False)
+                    #print('DEBUG :\n',param_list)
                     vec_E_std[t] = param_list[3]
                     vec_E_peak[t] = np.nan
                     vec_E_fwhm[t] = np.nan
@@ -165,8 +165,8 @@ for f in range(number_files):
             else :
                 #Emin =  np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
                 #Emax = (E_peak[f]+2*E_fwhm[f])/0.512                  # me c^2 unit
-                param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax ,print_flag=True)
-                print('DEBUG :\n',param_list)
+                param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax ,print_flag=False)
+                #print('DEBUG :\n',param_list)
                 vec_E_mean[t] = param_list[2]
                 vec_E_std[t] = param_list[3]
                 vec_emittance_y[t] = param_list[5]
@@ -174,21 +174,21 @@ for f in range(number_files):
                 vec_divergence_rms[t] = param_list[10]
                 vec_q_end[t] = param_list[4]
 
-                a0_max.append(vec_a0_max)
-                x_a0_max.append(vec_x_a0_max)
-                E_peak.append(vec_dQdE_max)
-                dQdE_max.append(vec_dQdE_max)
-                E_fwhm.append(vec_E_fwhm)
-                E_mean.append(vec_E_mean)
-                E_std.append(vec_E_std)
-                spectrum.append(vec_spectrum)
-                q_end.append(vec_q_end)
-                emittance_y.append(vec_emittance_y)
-                emittance_z.append(vec_emittance_z)
-                divergence_rms.append(vec_divergence_rms)
+        a0_max.append(vec_a0_max)
+        x_a0_max.append(vec_x_a0_max)
+        E_peak.append(vec_dQdE_max)
+        dQdE_max.append(vec_dQdE_max)
+        E_fwhm.append(vec_E_fwhm)
+        E_mean.append(vec_E_mean)
+        E_std.append(vec_E_std)
+        spectrum.append(vec_spectrum)
+        q_end.append(vec_q_end)
+        emittance_y.append(vec_emittance_y)
+        emittance_z.append(vec_emittance_z)
+        divergence_rms.append(vec_divergence_rms)
         
         print('################# DEBUG ####################')
-        print("\t spec,q,ener ",len(spectrum),len(q_end),len(energy_axis))
+        print("\t q[",f,"]=",q_end[f],"\n len(q_end)",len(q_end))
 
     except ti[f] == None: # SLK:  in case of error fill values with nans and continue the postprocessing
         injection_flag[f] = False

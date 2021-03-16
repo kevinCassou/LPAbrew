@@ -359,11 +359,11 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
         p            = np.sqrt((px**2+py**2+pz**2))                # momentum
         E            = np.sqrt((1.+p**2))
         Nparticles   = np.size(w)                                    # Number of particles read
-        if print_flag==True:
+        if print_flag == True:
             print("Read ",Nparticles," particles from the file")
         total_weight = w.sum()
         Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
-        if print_flag==True:
+        if print_flag == True:
             print("Total charge before filter in energy= ",Q," pC")
         # Apply a filter on energy
         filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0] )
@@ -378,7 +378,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
         p            = p[filter]
         total_weight = w.sum()
         Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
-        if print_flag==True:
+        if print_flag == True:
             print("Total charge after filter in Energy = ",Q," pC")
             print("Filter energy limits: ",E_min,", ",E_max," (m_e c^2)")
 
@@ -400,7 +400,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
 
         # histogram: integrated in dhoriz_axis and gives the total charge
         histogram_spectrum = hist1D*hist_conversion_factor/dhoriz_axis/horiz_axis_conversion_factor*e * ncrit * onel**3  * 10**(12)
-        if normalized==True:
+        if normalized == True:
             histogram_spectrum = histogram_spectrum / histogram_spectrum[:].max()
 
         # horizontal axis 
@@ -410,14 +410,14 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
         energy_axis = horiz_edges*horiz_axis_conversion_factor
 
         # Preparation for Plot
-        if normalized==True:
+        if normalized == True:
             plot_title   = "Normalized histogram"
         else:
             plot_title   = 'dQ/d'+horiz_axis_name+" (pC/MeV)"
 
         #print np.shape(histogram_spectrum)
         #
-        if print_flag==True:
+        if print_flag == True:
             print('Total charge in in the histogram =',np.sum(histogram_spectrum[:])*dhoriz_axis*horiz_axis_conversion_factor,' pC')
             print('Bins size: dx = ',binx)
 
