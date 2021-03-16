@@ -130,8 +130,7 @@ for f in range(number_files):
         
 
         for t in range(len(tsi)):
-            print('file:\t',f)
-            print('timestep:\t',t)
+            print('file:\t',f,' \t timestep:\t',t)
             # value and position of the max of a0 
             vec_a0[t] = l.getLasera0(tmp,ts[t])
             vec_x_a[t] = tsi[t]*tmp.namelist.onel
@@ -190,8 +189,9 @@ for f in range(number_files):
         a0_max[f] = np.max(vec_a0)
         x_a0_max[f] = vec_x_a[vec_a0.argmax()]
         
-        print('################# DEBUG ####################')
-        print("\t q[",f,"]=",q_end[f],"\n len(q_end)",len(q_end))
+        #print('################# DEBUG ####################')
+        #print("\t q[",f,"]=",q_end[f][0:10],"\n")
+        print("len(q_end)",len(q_end))
 
     except ti[f] == None: # SLK:  in case of error fill values with nans and continue the postprocessing
         injection_flag[f] = False
@@ -226,7 +226,7 @@ dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2
 
 df = pd.DataFrame(dict_data)
 
-df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_foc_vac', 'a0_max','x_a0_max','injection','t_i','x_i','a0','x','x_p','n_e_p',
+df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_foc_vac', 'a0_max','x_a0_max','injection','t_i','x_i','a0','x_a','x_p','n_e_p',
 'E_mean','E_std','E_peak','E_fwhm','dQdE_max',
 'q_end','emit_y','emit_z','div_rms','ener_axis','spec']]
 
@@ -238,8 +238,8 @@ for f in range(number_files):
     df['x_p'].iloc[f]               = x_p[f].astype(object)
     df['n_e_p'].iloc[f]             = n_e_p[f].astype(object)
     df['spec'].iloc[f]              = spectrum[f].astype(object)
-    df['a0'].iloc[f]            = a0[f].astype(object)
-    df['x_a'].iloc[f]          = x_a[f].astype(object) 
+    df['a0'].iloc[f]                = a0[f].astype(object)
+    df['x_a'].iloc[f]               = x_a[f].astype(object) 
     df['E_peak'].iloc[f]            = E_peak[f].astype(object)
     df['dQdE_max'].iloc[f]          = dQdE_max[f].astype(object)
     df['E_fwhm'].iloc[f]            = E_fwhm[f].astype(object)
