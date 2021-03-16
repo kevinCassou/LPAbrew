@@ -42,12 +42,13 @@ x_foc_vac       = np.zeros([number_files])
 x_p             = np.zeros([number_files,12])
 n_e_p           = np.zeros([number_files,12])
 injection_flag  = np.zeros([number_files])
-indi              = np.zeros([number_files])
+indi            = np.zeros([number_files])
 ti              = np.zeros([number_files])
 xi              = np.zeros([number_files])
+a0_max          = np.zeros([number_files])
+x_a0_max        = np.zeros([number_files])
 zeros_vector    = np.zeros([number_files]) 
 energy_axis     = np.zeros([number_files,400]) # KC: to be changed if limited are adapted to the peak of energy
-
 
 print("")
 print("--------------------------------------------")
@@ -56,8 +57,8 @@ print("Post-processing :  all timeStep from injection")
 print("")
 print("--------------------------------------------")
 print("")
-a0_max          = []
-x_a0_max        = []
+a0              = []
+x_a             = []
 E_peak          = []
 dQdE_max        = []
 E_fwhm          = []
@@ -113,8 +114,8 @@ for f in range(number_files):
         tsi = ts[int(indi[f]+1):-1]
         vec_len = tsi.shape[0]
         print(' DEUBG shape :', vec_len)
-        vec_a0_max          = np.zeros([vec_len])
-        vec_x_a0_max        = np.zeros([vec_len])
+        vec_a0              = np.zeros([vec_len])
+        vec_x_a             = np.zeros([vec_len])
         vec_E_peak          = np.zeros([vec_len])
         vec_dQdE_max        = np.zeros([vec_len])
         vec_E_fwhm          = np.zeros([vec_len])
@@ -126,17 +127,17 @@ for f in range(number_files):
         vec_emittance_z     = np.zeros([vec_len])
         vec_divergence_rms  = np.zeros([vec_len])
 
+        
+
         for t in range(len(tsi)):
             print('file:\t',f)
             print('timestep:\t',t)
-
             # value and position of the max of a0 
-            x,a = l.getMaxinMovingWindow(tmp)
-            vec_a0_max[t] = a.max()
-            vec_x_a0_max[t] = x[a.argmax()]
-
+            vec_a0[t] = l.getLasera0(tmp,ts[t])
+            vec_x_a[t] = tsi[t]*tmp.namelist.onel
+            
             # energy distribution characteristics 
-            energy_axis[f], vec_spectrum[t], vec_E_peak[t], vec_dQdE_max[t], vec_E_fwhm[t]  = l.getSpectrum(tmp,tsi[t], E_min=Emin, E_max = Emax, print_flag=True)
+            energy_axis[f], vec_spectrum[t], vec_E_peak[t], vec_dQdE_max[t], vec_E_fwhm[t]  = l.getSpectrum(tmp,tsi[t], E_min=Emin, E_max = Emax, print_flag=False)
 
             # beam parameter filter around energy peak 
             if (vec_E_peak[t] == 0) or (vec_E_fwhm[t] == 0) :
@@ -174,8 +175,8 @@ for f in range(number_files):
                 vec_divergence_rms[t] = param_list[10]
                 vec_q_end[t] = param_list[4]
 
-        a0_max.append(vec_a0_max)
-        x_a0_max.append(vec_x_a0_max)
+        a0.append(vec_a0)
+        x_a.append(vec_x_a)
         E_peak.append(vec_dQdE_max)
         dQdE_max.append(vec_dQdE_max)
         E_fwhm.append(vec_E_fwhm)
@@ -186,6 +187,8 @@ for f in range(number_files):
         emittance_y.append(vec_emittance_y)
         emittance_z.append(vec_emittance_z)
         divergence_rms.append(vec_divergence_rms)
+        a0_max[f] = np.max(vec_a0)
+        x_a0_max[f] = vec_x_a[vec_a0.argmax()]
         
         print('################# DEBUG ####################')
         print("\t q[",f,"]=",q_end[f],"\n len(q_end)",len(q_end))
@@ -218,13 +221,13 @@ for f in range(number_files):
 # saving dataframe to changing 2D ndarray to list of array to avoid trouble opening the dataframe 
 
 dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac,
-'a0_max':zeros_vector,'x_a0_max':zeros_vector,'injection':injection_flag,'t_i': ti,'x_i':xi,'E_mean':zeros_vector,'E_std':zeros_vector,
+'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'a0':a0,'x_a':x_a,'E_mean':zeros_vector,'E_std':zeros_vector,
 'E_peak':zeros_vector,'E_fwhm':zeros_vector,'dQdE_max':zeros_vector,'q_end':zeros_vector,'emit_y':zeros_vector,'emit_z':zeros_vector,'div_rms':zeros_vector,'ener_axis':zeros_vector,'spec':zeros_vector,'x_p':zeros_vector,'n_e_p':zeros_vector}
 
 df = pd.DataFrame(dict_data)
 
-df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_p','n_e_p','x_foc_vac', 'a0_max','x_a0_max',
-'injection','t_i','x_i','E_mean','E_std','E_peak','E_fwhm','dQdE_max',
+df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_foc_vac', 'a0_max','x_a0_max','injection','t_i','x_i','a0','x','x_p','n_e_p',
+'E_mean','E_std','E_peak','E_fwhm','dQdE_max',
 'q_end','emit_y','emit_z','div_rms','ener_axis','spec']]
 
 print('################# DEBUG ####################')
@@ -235,8 +238,8 @@ for f in range(number_files):
     df['x_p'].iloc[f]               = x_p[f].astype(object)
     df['n_e_p'].iloc[f]             = n_e_p[f].astype(object)
     df['spec'].iloc[f]              = spectrum[f].astype(object)
-    df['a0_max'].iloc[f]            = a0_max[f].astype(object)
-    df['x_a0_max'].iloc[f]          = x_a0_max[f].astype(object) 
+    df['a0'].iloc[f]            = a0[f].astype(object)
+    df['x_a'].iloc[f]          = x_a[f].astype(object) 
     df['E_peak'].iloc[f]            = E_peak[f].astype(object)
     df['dQdE_max'].iloc[f]          = dQdE_max[f].astype(object)
     df['E_fwhm'].iloc[f]            = E_fwhm[f].astype(object)

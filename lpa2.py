@@ -95,6 +95,16 @@ def getMaxinMovingWindow(S,var="Env_E_abs"):
         varmax[1,t] = np.max(temp)
     return varmax
 
+def getLasera0(S,timeStep,var='Env_E_abs'):
+    """ return the max of var on axis (r=0) for the timestep 
+    S : is the simulation output object return by happi.Open()
+    timeStep : timestep smilei unit
+    var : check namelist ["Env_E_abs]
+    return a numpy array - var.max() and the timestep vector [0:iteration_max]
+    """
+    return np.max(S.Probe(0,var,timeStep).getData()[0])
+    
+
 def getLaserWaist(S,timeStep,var='Env_E_abs'):
     """ return the laser waist of Env or field `var` at the iteration
     S : is the simulation output object return by happi.Open()
