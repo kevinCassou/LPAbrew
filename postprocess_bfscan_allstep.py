@@ -28,7 +28,9 @@ print("Number of configuration : \t", number_files)
 
 # for test, comment for postprocessing
 
-number_files = 10
+start_file = 0
+
+#number_files = 10
 
 # initialization of arrays 400 is the binning in the histogram energy 
 
@@ -39,8 +41,8 @@ l_1             = np.zeros([number_files])
 x_foc           = np.zeros([number_files])
 c_N2            = np.zeros([number_files])
 x_foc_vac       = np.zeros([number_files])
-x_p             = np.zeros([number_files,12])
-n_e_p           = np.zeros([number_files,12])
+x_p             = np.zeros([number_files,11]) # dimension may be check depending on the profile ... 
+n_e_p           = np.zeros([number_files,11]) # dimension may be check depending on the profile ... 
 injection_flag  = np.zeros([number_files])
 indi            = np.zeros([number_files])
 ti              = np.zeros([number_files])
@@ -100,11 +102,6 @@ for f in range(number_files):
         # injection timestep and position (m)
         ind,ti[f],xi[f] = l.getInjectionTime(tmp,ts)
         indi[f] = int(ind)
-        injection_flag[f] = True
-
-        print("#####################################\n",
-        '#\t  injection occured at:\t',ti[f],' \n',
-        "#####################################")
 
         # electron spectrum distribution bining min and max 
         Emin = 50           # me c^2 unit 
@@ -113,7 +110,19 @@ for f in range(number_files):
         # timestep from ionization
         tsi = ts[int(indi[f]+1):-1]
         vec_len = tsi.shape[0]
-        print(' DEUBG shape :', vec_len)
+        
+        if ti[f] != None:
+            injection_flag[f] = True
+
+            print("#####################################\n",
+            '#\t  injection occured at:\t',ti[f],' \n',
+            "#####################################")
+            print(' DEUBG shape :', vec_len)
+    
+        else :
+            vec_len = 1 
+            print(' DEUBG shape :', vec_len)
+
         vec_a0              = np.zeros([vec_len])
         vec_x_a             = np.zeros([vec_len])
         vec_E_peak          = np.zeros([vec_len])
@@ -126,6 +135,8 @@ for f in range(number_files):
         vec_emittance_y     = np.zeros([vec_len])
         vec_emittance_z     = np.zeros([vec_len])
         vec_divergence_rms  = np.zeros([vec_len])
+
+
 
         
 
