@@ -8,7 +8,15 @@
 ### loading module
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys
-import happi
+try :
+    import happi
+except ImportError :
+    try:
+        execfile("Diagnostics.py")
+    except IOError:
+        print('copy the Diagnostics.py file from Smilei directory')
+    pass
+
 #sys.path.append('/Users/cassou/Simulations/Smilei/scripts/Diagnostics.py')
 import numpy as np
 #import matplotlib
