@@ -16,7 +16,7 @@ import lpa2 as l
 
 ## get the list of config folder 
 
-rootpath = '/ccc/scratch/cont003/smilei/cassouke/BF-TEST/'
+rootpath = '/ccc/scratch/cont003/smilei/cassouke/BF-TEST-CN2-0p3/'
 
 files = list(filter(os.path.isdir, glob.glob(rootpath + "/*/")))
 files.sort(key=lambda x: os.path.getmtime(x))
@@ -73,14 +73,15 @@ divergence_rms  = []
 
 
 ## scanning the configuration
-for f in range(start_file,start_file + number_files):
+for f in range(number_files):
     # loading data 
+    fnumber =  start_file + f
     print("")
     print("--------------------------------------------")
     print("")
-    print("loading data ...\n",str(files[f]),"\n")
+    print("loading data ...\n",str(files[fnumber]),"\n")
 
-    tmp = l.loadData(str(files[f]))
+    tmp = l.loadData(str(files[fnumber]))
     # read configuration
     Config[f] = tmp.namelist.config_external['Config']
     n_e_1[f] = tmp.namelist.config_external['n_e_1']
@@ -106,140 +107,140 @@ for f in range(start_file,start_file + number_files):
     Emax = 1000         # me c^2 unit
 
    
-    try: # SLK: continue postprocessing even in case of errors:
-        #@@@@@@@@@@@@@@@@@@@@@ injection @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        if ti[f] != None:
-            injection_flag[f] = True
+    #try: # SLK: continue postprocessing even in case of errors:
+    #@@@@@@@@@@@@@@@@@@@@@ injection @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    if ti[f] != None:
+        injection_flag[f] = True
 
-            # timestep from ionization
-            tsi = ts[int(indi[f]+2):-1]
-            vec_len = tsi.shape[0]
+        # timestep from ionization
+        tsi = ts[int(indi[f]+2):-1]
+        vec_len = tsi.shape[0]
 
-            print("#####################################\n",
-            '#\t  injection occured at:\t',ti[f],' \n',
-            "#####################################")
-            print(' DEUBG shape :', vec_len)
+        print("#####################################\n",
+        '#\t  injection occured at:\t',ti[f],' \n',
+        "#####################################")
+        print(' DEUBG shape :', vec_len)
 
-            vec_a0              = np.zeros([vec_len])
-            vec_x_a             = np.zeros([vec_len])
-            vec_E_peak          = np.zeros([vec_len])
-            vec_dQdE_max        = np.zeros([vec_len])
-            vec_E_fwhm          = np.zeros([vec_len])
-            vec_E_mean          = np.zeros([vec_len])
-            vec_E_std           = np.zeros([vec_len])
-            vec_spectrum        = np.zeros([vec_len,400])
-            vec_q_end           = np.zeros([vec_len])
-            vec_emittance_y     = np.zeros([vec_len])
-            vec_emittance_z     = np.zeros([vec_len])
-            vec_divergence_rms  = np.zeros([vec_len])
+        vec_a0              = np.zeros([vec_len])
+        vec_x_a             = np.zeros([vec_len])
+        vec_E_peak          = np.zeros([vec_len])
+        vec_dQdE_max        = np.zeros([vec_len])
+        vec_E_fwhm          = np.zeros([vec_len])
+        vec_E_mean          = np.zeros([vec_len])
+        vec_E_std           = np.zeros([vec_len])
+        vec_spectrum        = np.zeros([vec_len,400])
+        vec_q_end           = np.zeros([vec_len])
+        vec_emittance_y     = np.zeros([vec_len])
+        vec_emittance_z     = np.zeros([vec_len])
+        vec_divergence_rms  = np.zeros([vec_len])
 
-            for t in range(len(tsi)):
-                print('file:\t',f,' \t timestep:\t',t)
-                # value and position of the max of a0 
-                vec_a0[t] = l.getLasera0(tmp,tsi[t])
-                vec_x_a[t] = tsi[t]*tmp.namelist.onel
-                
-                # energy distribution characteristics 
-                energy_axis[f], vec_spectrum[t], vec_E_peak[t], vec_dQdE_max[t], vec_E_fwhm[t]  = l.getSpectrum(tmp,tsi[t], E_min=Emin, E_max = Emax, print_flag=False)
+        for t in range(len(tsi)):
+            print('file:\t',f,' \t timestep:\t',t)
+            # value and position of the max of a0 
+            vec_a0[t] = l.getLasera0(tmp,tsi[t])
+            vec_x_a[t] = tsi[t]*tmp.namelist.onel
+            
+            # energy distribution characteristics 
+            energy_axis[f], vec_spectrum[t], vec_E_peak[t], vec_dQdE_max[t], vec_E_fwhm[t]  = l.getSpectrum(tmp,tsi[t], E_min=Emin, E_max = Emax, print_flag=False)
 
-                # beam parameter filter around energy peak 
-                if (vec_E_peak[t] == 0) or (vec_E_fwhm[t] == 0) :
-                    try:
-                        param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax,print_flag=False)
-                        #print('DEBUG :\n',param_list)
-                        vec_E_std[t] = param_list[3]
-                        vec_E_peak[t] = np.nan
-                        vec_E_fwhm[t] = np.nan
-                        vec_E_std[t] = param_list[3]
-                        vec_dQdE_max[t] = vec_spectrum.max()
-                        vec_emittance_y[t] = param_list[5]
-                        vec_emittance_z[t] = param_list[6]
-                        vec_divergence_rms[t] = param_list[10]
-                        vec_q_end[t] = param_list[4]
-                    except TypeError :
-                        vec_E_std[t] = np.nan
-                        vec_E_peak[t] = np.nan
-                        vec_E_fwhm[t] = np.nan
-                        vec_E_std[t] = np.nan
-                        vec_dQdE_max[t] = np.nan
-                        vec_emittance_y[t] = np.nan
-                        vec_emittance_z[t] = np.nan
-                        vec_divergence_rms[t] = np.nan
-                        vec_q_end[t] = np.nan
-                else :
-                    #Emin =  np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
-                    #Emax = (E_peak[f]+2*E_fwhm[f])/0.512                  # me c^2 unit
-                    param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax ,print_flag=False)
+            # beam parameter filter around energy peak 
+            if (vec_E_peak[t] == 0) or (vec_E_fwhm[t] == 0) :
+                try:
+                    param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax,print_flag=False)
                     #print('DEBUG :\n',param_list)
-                    vec_E_mean[t] = param_list[2]
                     vec_E_std[t] = param_list[3]
+                    vec_E_peak[t] = np.nan
+                    vec_E_fwhm[t] = np.nan
+                    vec_E_std[t] = param_list[3]
+                    vec_dQdE_max[t] = vec_spectrum.max()
                     vec_emittance_y[t] = param_list[5]
                     vec_emittance_z[t] = param_list[6]
                     vec_divergence_rms[t] = param_list[10]
                     vec_q_end[t] = param_list[4]
+                except TypeError :
+                    vec_E_std[t] = np.nan
+                    vec_E_peak[t] = np.nan
+                    vec_E_fwhm[t] = np.nan
+                    vec_E_std[t] = np.nan
+                    vec_dQdE_max[t] = np.nan
+                    vec_emittance_y[t] = np.nan
+                    vec_emittance_z[t] = np.nan
+                    vec_divergence_rms[t] = np.nan
+                    vec_q_end[t] = np.nan
+            else :
+                #Emin =  np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
+                #Emax = (E_peak[f]+2*E_fwhm[f])/0.512                  # me c^2 unit
+                param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax ,print_flag=False)
+                #print('DEBUG :\n',param_list)
+                vec_E_mean[t] = param_list[2]
+                vec_E_std[t] = param_list[3]
+                vec_emittance_y[t] = param_list[5]
+                vec_emittance_z[t] = param_list[6]
+                vec_divergence_rms[t] = param_list[10]
+                vec_q_end[t] = param_list[4]
 
-            a0.append(vec_a0)
-            x_a.append(vec_x_a)
-            E_peak.append(vec_dQdE_max)
-            dQdE_max.append(vec_dQdE_max)
-            E_fwhm.append(vec_E_fwhm)
-            E_mean.append(vec_E_mean)
-            E_std.append(vec_E_std)
-            spectrum.append(vec_spectrum)
-            q_end.append(vec_q_end)
-            emittance_y.append(vec_emittance_y)
-            emittance_z.append(vec_emittance_z)
-            divergence_rms.append(vec_divergence_rms)
-            a0_max[f] = np.max(vec_a0)
-            x_a0_max[f] = vec_x_a[vec_a0.argmax()]
-        
-            #print('################# DEBUG ####################')
-            #print("\t q[",f,"]=",q_end[f][0:10],"\n")
-            print("len(q_end)",len(q_end))
+        a0.append(vec_a0)
+        x_a.append(vec_x_a)
+        E_peak.append(vec_dQdE_max)
+        dQdE_max.append(vec_dQdE_max)
+        E_fwhm.append(vec_E_fwhm)
+        E_mean.append(vec_E_mean)
+        E_std.append(vec_E_std)
+        spectrum.append(vec_spectrum)
+        q_end.append(vec_q_end)
+        emittance_y.append(vec_emittance_y)
+        emittance_z.append(vec_emittance_z)
+        divergence_rms.append(vec_divergence_rms)
+        a0_max[f] = np.max(vec_a0)
+        x_a0_max[f] = vec_x_a[vec_a0.argmax()]
+    
+        #print('################# DEBUG ####################')
+        #print("\t q[",f,"]=",q_end[f][0:10],"\n")
+        print("len(q_end)",len(q_end))
 
-        #@@@@@@@@@@@@@@@@@@@@@ no injection @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-        else :
-            injection_flag[f] = False
-            print("#####################################\n",
-            '#\t no injection \n',
-            "#####################################")
-            vec_len = ts.shape[0]
-            print(' DEUBG shape :', vec_len)
-            # only a0 is computed
-            vec_a0              = np.zeros([vec_len])
-            vec_x_a             = np.zeros([vec_len])
-            for t in range(len(ts)):
-                # value and position of the max of a0 
-                vec_a0[t] = l.getLasera0(tmp,tsi[t])
-                vec_x_a[t] = tsi[t]*tmp.namelist.onel
-            
-            
-            a0_max[f] = np.max(vec_a0)
-            x_a0_max[f] = vec_x_a[vec_a0.argmax()]
-            a0.append(vec_a0)
-            x_a.append(vec_x_a)
-            # all other valuees are filled with NaN
-            ti[f] = np.nan
-            xi[f] = np.nan
-            energy_axis[f] = np.nan
-            spectrum.append(np.nan)
-            E_peak.append(np.nan)
-            dQdE_max.append(np.nan)
-            E_mean.append(np.nan)
-            E_std.append(np.nan)
-            E_fwhm.append(np.nan)
-            emittance_y.append(np.nan)
-            emittance_z.append(np.nan)
-            divergence_rms.append(np.nan)
-            q_end.append(np.nan)
-
-    except : # SLK:  in case of error fill values with nans and continue the postprocessing
+    #@@@@@@@@@@@@@@@@@@@@@ no injection @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    else :
         injection_flag[f] = False
         print("#####################################\n",
-        '#\t bad configuration, error occured in postprocessing \n',
+        '#\t no injection \n',
         "#####################################")
+        vec_len = ts.shape[0]
+        print(' DEUBG shape :', vec_len)
+        # only a0 is computed
+        vec_a0              = np.zeros([vec_len])
+        vec_x_a             = np.zeros([vec_len])
+        for t in range(len(ts)):
+            # value and position of the max of a0 
+            vec_a0[t] = l.getLasera0(tmp,tsi[t])
+            vec_x_a[t] = tsi[t]*tmp.namelist.onel
+        
+        
+        a0_max[f] = np.max(vec_a0)
+        x_a0_max[f] = vec_x_a[vec_a0.argmax()]
+        a0.append(vec_a0)
+        x_a.append(vec_x_a)
+        # all other valuees are filled with NaN
+        ti[f] = np.nan
+        xi[f] = np.nan
+        energy_axis[f] = np.nan
+        spectrum.append(np.nan)
+        E_peak.append(np.nan)
+        dQdE_max.append(np.nan)
+        E_mean.append(np.nan)
+        E_std.append(np.nan)
+        E_fwhm.append(np.nan)
+        emittance_y.append(np.nan)
+        emittance_z.append(np.nan)
+        divergence_rms.append(np.nan)
+        q_end.append(np.nan)
 
-        pass
+    #except : # SLK:  in case of error fill values with nans and continue the postprocessing
+    injection_flag[f] = False
+    print("#####################################\n",
+    '#\t bad configuration, error occured in postprocessing \n',
+    "#####################################")
+        
+    #    pass
 
 
 
