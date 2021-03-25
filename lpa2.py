@@ -23,7 +23,6 @@ import numpy as np
 #import matplotlib
 #matplotlib.use('Agg')
 import scipy.constants as sc
-import scipy.stats as stats
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, peak_widths
 import matplotlib.pyplot as plt
@@ -79,6 +78,18 @@ def fwhm(x,y):
 
 def gaussian(x, amp, xcenter, width):
     return amp * np.exp(-(x-xcenter)**2 / width**2)
+
+def mad(a, axis=None):
+    """
+    Compute *Median Absolute Deviation* of an array along given axis.
+    """
+    # Median along given axis, but *keeping* the reduced axis so that
+    # result can still broadcast against a.
+    med = np.median(a, axis=axis, keepdims=True)
+    mad = np.median(np.absolute(a - med), axis=axis)  # MAD along given axis
+
+    return mad
+
 
 ########## load data with happi ##############################
 
@@ -296,7 +307,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
             np.mean(E)*0.512,                                       # [2] mean energy   [MeV]
             np.median(E)*0.512,                                     # [3] median value   [MeV]
             np.std(E)/np.mean(E)*100,                               # [4]% RMS energy spread   [%]
-            stats.median_absolute_deviation(E)/np.median(E)*100,    # [5] mad value [%]
+            mad(E)/np.median(E)*100,                                # [5] mad value [%]
             Q,                                                      # [6]charge [pC]
             emittancey,                                             # [7] emittance [pi.mm.mrad]
             emittancez,                                             # [8] emittance [pi.mm.mrad]
