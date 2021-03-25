@@ -55,7 +55,9 @@ E_peak          = np.zeros([number_files])
 dQdE_max        = np.zeros([number_files])
 E_fwhm          = np.zeros([number_files])
 E_mean          = np.zeros([number_files])
+E_med           = np.zeros([number_files])
 E_std           = np.zeros([number_files])
+E_mad           = np.zeros([number_files])
 spectrum        = np.zeros([number_files,400])
 energy_axis     = np.zeros([number_files,400])
 q_end           = np.zeros([number_files])
@@ -109,8 +111,12 @@ for f in range(number_files):
         "#####################################")
         ti[f] = np.nan
         xi[f] = np.nan
+        E_mean = np.nan
+        E_std = np.nan
         E_fwhm[f] = np.nan
         E_peak[f] = np.nan
+        E_med = np.nan
+        E_mad = np.nan
         dQdE_max        = np.nan
         emittance_y[f] = np.nan
         emittance_z[f] = np.nan
@@ -142,37 +148,41 @@ for f in range(number_files):
         if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
             param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax,print_flag=True)
             E_mean[f] = param_list[2]
-            E_std[f] = param_list[3]
+            E_med[f] = param_list[3]
+            E_std[f] = param_list[4]
+            E_mad[f] = param_list[5]
             E_peak[f] = np.nan
             E_fwhm[f] = np.nan
             dQdE_max[f] = spectrum.max()
-            emittance_y[f] = param_list[5]
-            emittance_z[f] = param_list[6]
-            divergence_rms[f] = param_list[10]
-            q_end[f] = param_list[4]
+            emittance_y[f] = param_list[7]
+            emittance_z[f] = param_list[8]
+            divergence_rms[f] = param_list[12]
+            q_end[f] = param_list[6]
 
         else :
 
             param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax ,print_flag=True)
             E_mean[f] = param_list[2]
-            E_std[f] = param_list[3]
-            emittance_y[f] = param_list[5]
-            emittance_z[f] = param_list[6]
-            divergence_rms[f] = param_list[10]
-            q_end[f] = param_list[4]
+            E_med[f] = param_list[3]
+            E_std[f] = param_list[4]
+            E_mad[f] = param_list[5]
+            emittance_y[f] = param_list[7]
+            emittance_z[f] = param_list[8]
+            divergence_rms[f] = param_list[12]
+            q_end[f] = param_list[6]
 
 
 # saving dataframe to changing 2D ndarray to list of array to avoid trouble opening the dataframe 
 
 dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac,
-'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'E_mean':E_mean,'E_std':E_std,
+'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'E_mean':E_mean,'E_med':E_med,'E_std':E_std, 'E_mad':E_mad,
 'E_peak':E_peak,'E_fwhm':E_fwhm,'dQdE_max':dQdE_max,'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'div_rms':divergence_rms,
 'ener_axis':zeros_vector,'spec':zeros_vector,'x_p':zeros_vector,'n_e_p':zeros_vector}
 
 df = pd.DataFrame(dict_data)
 
 df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_p','n_e_p','x_foc_vac', 'a0_max','x_a0_max',
-'injection','t_i','x_i','E_mean','E_std','E_peak','E_fwhm','dQdE_max',
+'injection','t_i','x_i','E_mean','E_med','E_std','E_mad','E_peak','E_fwhm','dQdE_max',
 'q_end','emit_y','emit_z','div_rms','ener_axis','spec']]
 tmp_e = []
 tmp_s = []

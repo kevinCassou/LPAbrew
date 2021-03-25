@@ -8,6 +8,7 @@
 ### loading module
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys
+
 try :
     import happi
 except ImportError :
@@ -22,6 +23,7 @@ import numpy as np
 #import matplotlib
 #matplotlib.use('Agg')
 import scipy.constants as sc
+import scipy.stats as stats
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, peak_widths
 import matplotlib.pyplot as plt
@@ -273,31 +275,35 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print("")
                 print("--------------------------------------------")
                 print("")
-                print("Read \t\t\t\t\t",np.size(E)," particles")
-                print( "Iteration =\t\t\t\t ",iteration)
-                print( "Simulation time =\t\t\t ",iteration*dt_adim*onel/c*1e15," fs")
-                print( "E_mean = \t\t\t\t",np.mean(E)*0.512," MeV")
-                print( "2*DeltaE_rms / E_mean = \t\t\t", np.std(E)/np.mean(E)*100 , " %.")
-                print( "Total charge = \t\t\t", Q, " pC.")
-                print( "Emittance_y = \t\t\t\t",emittancey," mm-mrad")
-                print( "Emittance_z = \t\t\t\t",emittancez," mm-mrad")
-                print( "divergence_rms = \t\t\t",divergence_rms*1e-3,"mrad")
+                print(" Read \t\t\t\t\t",np.size(E)," particles")
+                print( "[0] Iteration =\t\t\t\t ",iteration)
+                print( "[1] Simulation time =\t\t\t ",iteration*dt_adim*onel/c*1e15," fs")
+                print( "[2] E_mean = \t\t\t\t",np.mean(E)*0.512," MeV")
+                print( "[3] E_med = \t\t\t\t", np.median(E)*0.512, "MeV")
+                print( "[4] DeltaE_rms / E_mean = \t\t\t", np.std(E)/np.mean(E)*100 , " %.")
+                print( "[5] E_mad /E_med  = \t\t\t",stats.median_absolute_deviation(E)/np.median(E)*100, " %.")
+                print( "[6] Total charge = \t\t\t", Q, " pC.")
+                print( "[8] Emittance_y = \t\t\t\t",emittancey," mm-mrad")
+                print( "[9] Emittance_z = \t\t\t\t",emittancez," mm-mrad")
+                print( "[10] divergence_rms = \t\t\t",divergence_rms*1e-3,"mrad")
                 print( "")
                 print( "--------------------------------------------")
                 print( "")
 
             # beam paramater list for iteration timestep
-            vlist = [iteration,                 # timestep
-            iteration*dt_adim*onel/c*1e15,      # time [fs]
-            np.mean(E)*0.512,                   # mean energy   [MeV]
-            np.std(E)/np.mean(E)*100,           # % RMS energy spread   [%]
-            Q,                                  # charge [pC]
-            emittancey,                         # emittance [pi.mm.mrad]
-            emittancez,                         # emittance [pi.mm.mrad]
-            rmssize_longitudinal,               # bunch RMS length [um]
-            rmssize_y,                          # bunch RMS sigy [um]
-            rmssize_z,                          # bunch RMS sigz [um]
-            divergence_rms]                     # RMS divergence [mrad]
+            vlist = [iteration,                                     # [0] timestep
+            iteration*dt_adim*onel/c*1e15,                          # [1] time [fs]
+            np.mean(E)*0.512,                                       # [2] mean energy   [MeV]
+            np.median(E)*0.512,                                     # [3] median value   [MeV]
+            np.std(E)/np.mean(E)*100,                               # [4]% RMS energy spread   [%]
+            stats.median_absolute_deviation(E)/np.median(E)*100,    # [5] mad value [%]
+            Q,                                                      # [6]charge [pC]
+            emittancey,                                             # [7] emittance [pi.mm.mrad]
+            emittancez,                                             # [8] emittance [pi.mm.mrad]
+            rmssize_longitudinal,                                   # [9] bunch RMS length [um]
+            rmssize_y,                                              # [10] bunch RMS sigy [um]
+            rmssize_z,                                              # [11] bunch RMS sigz [um]
+            divergence_rms]                                         # [12] RMS divergence [mrad]
 
             # save beam parameter in a file
             if save_flag == True:
