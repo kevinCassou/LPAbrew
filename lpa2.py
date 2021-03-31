@@ -286,17 +286,17 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print("")
                 print("--------------------------------------------")
                 print("")
-                print(" Read \t\t\t\t\t",np.size(E)," particles")
-                print( "[0] Iteration =\t\t\t\t ",iteration)
-                print( "[1] Simulation time =\t\t\t ",iteration*dt_adim*onel/c*1e15," fs")
-                print( "[2] E_mean = \t\t\t\t",np.mean(E)*0.512," MeV")
-                print( "[3] E_med = \t\t\t\t", np.median(E)*0.512, "MeV")
+                print(" Read \t\t\t\t\t\t",np.size(E)," particles")
+                print( "[0] Iteration = \t\t\t\t\t ",iteration)
+                print( "[1] Simulation time = \t\t\t ",iteration*dt_adim*onel/c*1e15," fs")
+                print( "[2] E_mean = \t\t\t\t\t ",np.mean(E)*0.512," MeV")
+                print( "[3] E_med = \t\t\t\t\t ", np.median(E)*0.512, "MeV")
                 print( "[4] DeltaE_rms / E_mean = \t\t\t", np.std(E)/np.mean(E)*100 , " %.")
-                print( "[5] E_mad /E_med  = \t\t\t",stats.median_absolute_deviation(E)/np.median(E)*100, " %.")
-                print( "[6] Total charge = \t\t\t", Q, " pC.")
+                print( "[5] E_mad /E_med  = \t\t\t\t ",mad(E)/np.median(E)*100, " %.")
+                print( "[6] Total charge = \t\t\t\t ", Q, " pC.")
                 print( "[8] Emittance_y = \t\t\t\t",emittancey," mm-mrad")
                 print( "[9] Emittance_z = \t\t\t\t",emittancez," mm-mrad")
-                print( "[10] divergence_rms = \t\t\t",divergence_rms*1e-3,"mrad")
+                print( "[10] divergence_rms = \t\t\t\t",divergence_rms*1e3,"mrad")
                 print( "")
                 print( "--------------------------------------------")
                 print( "")
@@ -517,7 +517,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
 
     return energy_axis, specData, Epeak, dQdE_max, Ewidth
 
-def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_size=100000000,print_flag = True):
+def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_size=100000000,E_min=25, E_max = 520,print_flag = True):
     """return x,y,z,px,py,pz,E,w,p for all particle at timesteps iteration within the filter"""
     track_part = S.TrackParticles(species = species_name,sort = sort,  chunksize=chunk_size)
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
@@ -556,3 +556,30 @@ def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_si
         total_weight = w.sum()
         
     return np.array([x,y,z,px,py,pz,E,w,p])
+
+def getPSxrms(S,iteration,species_name="electronfromion",sort= False,chunk_size=100000000,E_min=25, E_max = 520,print_flag = True):
+    """return x,y,z,px,py,pz,E,w,p for all particle at timesteps iteration within the filter"""
+    track_part = S.TrackParticles(species = species_name,sort = sort,  chunksize=chunk_size)
+    #print("Available timesteps = ",track_part.getAvailableTimesteps())
+
+    for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
+        # Read data
+        #if print_flag==True:
+        #	print(particle_chunk.keys())
+        px           = particle_chunk["px"]
+        x            = particle_chunk["x"]               # momentum
+        w            = particle_chunk["w"]              
+        Nparticles   = np.size(w)
+        if print_flag==True:                                  # Number of particles read
+            print("Read ",Nparticles," particles from the file")
+
+        # Apply a filter on energy
+        filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0] )
+        x            = x[filter]
+        px           = px[filter]
+        w            = w[filter]
+        Nparticles   = np.size(w)
+        if print_flag==True:                                  # Number of particles read
+            print("After filtering",Nparticles," particles")
+  
+    return np.array([x,px])
