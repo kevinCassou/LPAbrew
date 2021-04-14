@@ -89,9 +89,9 @@ for f in range(number_files):
 
     # read configuration
     Config[f] = tmp.namelist.config_external['Config']
-    n_e_1[f] = tmp.namelist.config_external['phi_centre']
-    r[f]= tmp.namelist.config_external['p_1']
-    l_1[f] = tmp.namelist.config_external['p_2']
+    phi_centre[f] = tmp.namelist.config_external['phi_centre']
+    p_1[f]= tmp.namelist.config_external['p_1']
+    p_2[f] = tmp.namelist.config_external['p_2']
     x_foc[f] = tmp.namelist.config_external['x_foc']
     c_N2[f] = tmp.namelist.config_external['c_N2']
     x_foc_vac[f] = tmp.namelist.xfocus
@@ -181,7 +181,7 @@ for f in range(number_files):
 
 dict_data = {'x_foc':x_foc, 'c_N2':c_N2, 'phi_centre':phi_centre, 'p_1':p_1, 'p_2':p_2,'x_foc_vac':x_foc_vac,
 'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'E_mean':E_mean,'E_med':E_med,'E_std':E_std, 'E_mad':E_mad,
-'E_peak':E_peak,'E_fwhm':E_fwhm,'dQdE_max':dQdE_max,'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'size_x':size_x,div_rms':divergence_rms,
+'E_peak':E_peak,'E_fwhm':E_fwhm,'dQdE_max':dQdE_max,'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'size_x':size_x, div_rms':divergence_rms,
 'ener_axis':zeros_vector,'spec':zeros_vector,'x_p':zeros_vector,'n_e_p':zeros_vector}
 
 df = pd.DataFrame(dict_data)
