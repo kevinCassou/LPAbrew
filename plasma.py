@@ -77,7 +77,7 @@ def eplasmaNwL(ne,a0):
     return eplasmaNwL in [um]
     '''
     lp = eplasmawL(ne)
-    e0 = EO(ne)
+    e0 = E0(ne)
     emax = Emax(a0)
     rE = emax/e0 
     if rE < 1:

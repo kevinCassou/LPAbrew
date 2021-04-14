@@ -17,7 +17,7 @@ import lpa2 as l
 
 ## get the list of config folder 
 
-rootpath = '/ccc/scratch/cont003/smilei/cassouke/BF-TEST/'
+rootpath = '/ccc/scratch/cont003/smilei/drobniap/BF-TEST-CN2-03/'
 
 files = list(filter(os.path.isdir, glob.glob(rootpath + "/*/")))
 files.sort(key=lambda x: os.path.getmtime(x))
@@ -35,9 +35,10 @@ number_files = 10
 # initialization of arrays 400 is the binning in the histogram energy 
 
 Config          = np.zeros([number_files])
-n_e_1           = np.zeros([number_files])
-r               = np.zeros([number_files])
-l_1             = np.zeros([number_files])
+'Config', 
+phi_centre      = np.zeros([number_files])
+p_1             = np.zeros([number_files])
+p_2             = np.zeros([number_files])
 x_foc           = np.zeros([number_files])
 c_N2            = np.zeros([number_files])
 x_foc_vac       = np.zeros([number_files])
@@ -63,6 +64,7 @@ energy_axis     = np.zeros([number_files,400])
 q_end           = np.zeros([number_files])
 emittance_y     = np.zeros([number_files])
 emittance_z     = np.zeros([number_files])
+size_x          = np.zeros([number_files])
 divergence_rms  = np.zeros([number_files])
 
 
@@ -87,9 +89,9 @@ for f in range(number_files):
 
     # read configuration
     Config[f] = tmp.namelist.config_external['Config']
-    n_e_1[f] = tmp.namelist.config_external['n_e_1']
-    r[f]= tmp.namelist.config_external['r']
-    l_1[f] = tmp.namelist.config_external['l_1']
+    n_e_1[f] = tmp.namelist.config_external['phi_centre']
+    r[f]= tmp.namelist.config_external['p_1']
+    l_1[f] = tmp.namelist.config_external['p_2']
     x_foc[f] = tmp.namelist.config_external['x_foc']
     c_N2[f] = tmp.namelist.config_external['c_N2']
     x_foc_vac[f] = tmp.namelist.xfocus
@@ -120,6 +122,7 @@ for f in range(number_files):
         dQdE_max        = np.nan
         emittance_y[f] = np.nan
         emittance_z[f] = np.nan
+        size_x[f] = np.nan
         spectrum        = np.nan
         divergence_rms[f] = np.nan
         q_end[f] = np.nan
@@ -132,7 +135,7 @@ for f in range(number_files):
         "###################################################")
 
         # get electron spectrum at last timestep
-        Emin = 25   #   np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
+        Emin = 100   #   np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
         Emax = 1000  #  (E_peak[f]+2*E_fwhm[f])/0.512@                  # me c^2 unit
 
         #  only the given the timestep value 
@@ -156,6 +159,7 @@ for f in range(number_files):
             dQdE_max[f] = spectrum.max()
             emittance_y[f] = param_list[7]
             emittance_z[f] = param_list[8]
+            size_x[f] = param_list[9]
             divergence_rms[f] = param_list[12]
             q_end[f] = param_list[6]
 
@@ -168,22 +172,23 @@ for f in range(number_files):
             E_mad[f] = param_list[5]
             emittance_y[f] = param_list[7]
             emittance_z[f] = param_list[8]
+            size_x[f] = param_list[9]
             divergence_rms[f] = param_list[12]
             q_end[f] = param_list[6]
 
 
 # saving dataframe to changing 2D ndarray to list of array to avoid trouble opening the dataframe 
 
-dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac,
+dict_data = {'x_foc':x_foc, 'c_N2':c_N2, 'phi_centre':phi_centre, 'p_1':p_1, 'p_2':p_2,'x_foc_vac':x_foc_vac,
 'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'E_mean':E_mean,'E_med':E_med,'E_std':E_std, 'E_mad':E_mad,
-'E_peak':E_peak,'E_fwhm':E_fwhm,'dQdE_max':dQdE_max,'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'div_rms':divergence_rms,
+'E_peak':E_peak,'E_fwhm':E_fwhm,'dQdE_max':dQdE_max,'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'size_x':size_x,div_rms':divergence_rms,
 'ener_axis':zeros_vector,'spec':zeros_vector,'x_p':zeros_vector,'n_e_p':zeros_vector}
 
 df = pd.DataFrame(dict_data)
 
-df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_p','n_e_p','x_foc_vac', 'a0_max','x_a0_max',
+df = df[['x_foc', 'c_N2', 'phi_centre', 'p_1', 'p_2','x_p','n_e_p','x_foc_vac', 'a0_max','x_a0_max',
 'injection','t_i','x_i','E_mean','E_med','E_std','E_mad','E_peak','E_fwhm','dQdE_max',
-'q_end','emit_y','emit_z','div_rms','ener_axis','spec']]
+'q_end','emit_y','emit_z','size_x','div_rms','ener_axis','spec']]
 tmp_e = []
 tmp_s = []
 tmp_x = []

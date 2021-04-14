@@ -294,8 +294,9 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print( "[4] DeltaE_rms / E_mean = \t\t\t", np.std(E)/np.mean(E)*100 , " %.")
                 print( "[5] E_mad /E_med  = \t\t\t\t ",mad(E)/np.median(E)*100, " %.")
                 print( "[6] Total charge = \t\t\t\t ", Q, " pC.")
-                print( "[8] Emittance_y = \t\t\t\t",emittancey," mm-mrad")
-                print( "[9] Emittance_z = \t\t\t\t",emittancez," mm-mrad")
+                print( "[7] Emittance_y = \t\t\t\t",emittancey," mm-mrad")
+                print( "[8] Emittance_z = \t\t\t\t",emittancez," mm-mrad")
+                print( "[8] size_x = \t\t\t\t",rmssize_longitudinal,"um (RMS)")
                 print( "[10] divergence_rms = \t\t\t\t",divergence_rms*1e3,"mrad")
                 print( "")
                 print( "--------------------------------------------")
@@ -558,7 +559,7 @@ def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_si
     return np.array([x,y,z,px,py,pz,E,w,p])
 
 def getPSxrms(S,iteration,species_name="electronfromion",sort= False,chunk_size=100000000,E_min=25, E_max = 520,print_flag = True):
-    """return x,y,z,px,py,pz,E,w,p for all particle at timesteps iteration within the filter"""
+    """return x,px for all particle at timesteps iteration within the filter"""
     track_part = S.TrackParticles(species = species_name,sort = sort,  chunksize=chunk_size)
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
 
@@ -567,8 +568,12 @@ def getPSxrms(S,iteration,species_name="electronfromion",sort= False,chunk_size=
         #if print_flag==True:
         #	print(particle_chunk.keys())
         px           = particle_chunk["px"]
-        x            = particle_chunk["x"]               # momentum
-        w            = particle_chunk["w"]              
+        py           = particle_chunk["py"]
+        pz           = particle_chunk["pz"]
+        x            = particle_chunk["x"]               
+        w            = particle_chunk["w"]
+        p            = np.sqrt((px**2+py**2+pz**2))                # momentum
+        E            = np.sqrt((1.+p**2))              
         Nparticles   = np.size(w)
         if print_flag==True:                                  # Number of particles read
             print("Read ",Nparticles," particles from the file")
