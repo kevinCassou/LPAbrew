@@ -132,10 +132,8 @@ def weighted_mad(data, weights):
     """
     Compute *weighted_Median Absolute Deviation* of an array along given axis.
     """
-    # Median along given axis, but *keeping* the reduced axis so that
-    # result can still broadcast against a.
-    wmed = weighted_median(data)
-    wmad = weighted_median((np.absolute(data - med), axis=axis)  # MAD along given axis
+    wmed = weighted_median(data,weights)
+    wmad = weighted_median((np.absolute(data - med),weights)  # MAD along given axis
 
     return wmad
 
@@ -338,10 +336,10 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print(" Read \t\t\t\t\t\t",np.size(E)," particles")
                 print( "[0] Iteration = \t\t\t\t\t ",iteration)
                 print( "[1] Simulation time = \t\t\t ",iteration*dt_adim*onel/c*1e15," fs")
-                print( "[2] E_mean = \t\t\t\t\t ",weighted_mean(E)*0.512," MeV")
-                print( "[3] E_med = \t\t\t\t\t ", weighted_median(E)*0.512, "MeV")
-                print( "[4] DeltaE_rms / E_mean = \t\t\t", weighted_std(E)/weighted_mean(E)*100 , " %.")
-                print( "[5] E_mad /E_med  = \t\t\t\t ",weighted_mad(E)/weighted_median(E)*100, " %.")
+                print( "[2] E_mean = \t\t\t\t\t ",weighted_mean(E,w)*0.512," MeV")
+                print( "[3] E_med = \t\t\t\t\t ", weighted_median(E,w)*0.512, "MeV")
+                print( "[4] DeltaE_rms / E_mean = \t\t\t", weighted_std(E,w)/weighted_mean(E,w)*100 , " %.")
+                print( "[5] E_mad /E_med  = \t\t\t\t ",weighted_mad(E,w)/weighted_median(E,w)*100, " %.")
                 print( "[6] Total charge = \t\t\t\t ", Q, " pC.")
                 print( "[7] Emittance_y = \t\t\t\t",emittancey," mm-mrad")
                 print( "[8] Emittance_z = \t\t\t\t",emittancez," mm-mrad")
@@ -356,10 +354,10 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
             if np.max(E) > E_min:
                 vlist = [iteration,                                     # [0] timestep
                 iteration*dt_adim*onel/c*1e15,                          # [1] time [fs]
-                weighted_mean(E)*0.512,                                 # [2] weighted mean energy   [MeV]
-                weighted_median(E)*0.512,                               # [3] weighted median value   [MeV]
-                weighted_std(E)/weighted_mean(E)*100,                   # [4] RMS energy spread   [%]
-                weighted_mad(E)/weighted_median(E)*100,                 # [5] MAD value [%]
+                weighted_mean(E,w)*0.512,                                 # [2] weighted mean energy   [MeV]
+                weighted_median(E,w)*0.512,                               # [3] weighted median value   [MeV]
+                weighted_std(E,w)/weighted_mean(E,w)*100,                   # [4] RMS energy spread   [%]
+                weighted_mad(E,w)/weighted_median(E,w)*100,                 # [5] MAD value [%]
                 Q,                                                      # [6] charge [pC]
                 emittancey,                                             # [7] emittance [pi.mm.mrad]
                 emittancez,                                             # [8] emittance [pi.mm.mrad]
