@@ -306,17 +306,18 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
             # beam paramater list for iteration timestep
             vlist = [iteration,                                     # [0] timestep
             iteration*dt_adim*onel/c*1e15,                          # [1] time [fs]
-            np.mean(E)*0.512,                                       # [2] mean energy   [MeV]
-            np.median(E)*0.512,                                     # [3] median value   [MeV]
-            np.std(E)/np.mean(E)*100,                               # [4]% RMS energy spread   [%]
-            mad(E)/np.median(E)*100,                                # [5] mad value [%]
-            Q,                                                      # [6]charge [pC]
-            emittancey,                                             # [7] emittance [pi.mm.mrad]
-            emittancez,                                             # [8] emittance [pi.mm.mrad]
-            rmssize_longitudinal,                                   # [9] bunch RMS length [um]
-            rmssize_y,                                              # [10] bunch RMS sigy [um]
-            rmssize_z,                                              # [11] bunch RMS sigz [um]
-            divergence_rms]                                         # [12] RMS divergence [mrad]
+            if np.max(E) > E_min:
+                np.mean(E)*0.512,                                       # [2] mean energy   [MeV]
+                np.median(E)*0.512,                                     # [3] median value   [MeV]
+                np.std(E)/np.mean(E)*100,                               # [4]% RMS energy spread   [%]
+                mad(E)/np.median(E)*100,                                # [5] mad value [%]
+                Q,                                                      # [6]charge [pC]
+                emittancey,                                             # [7] emittance [pi.mm.mrad]
+                emittancez,                                             # [8] emittance [pi.mm.mrad]
+                rmssize_longitudinal,                                   # [9] bunch RMS length [um]
+                rmssize_y,                                              # [10] bunch RMS sigy [um]
+                rmssize_z,                                              # [11] bunch RMS sigz [um]
+                divergence_rms*1e3]                                         # [12] RMS divergence [mrad]
 
             # save beam parameter in a file
             if save_flag == True:
