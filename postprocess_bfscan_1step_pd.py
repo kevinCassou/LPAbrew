@@ -42,8 +42,8 @@ p_2             = np.zeros([number_files])
 x_foc           = np.zeros([number_files])
 c_N2            = np.zeros([number_files])
 x_foc_vac       = np.zeros([number_files])
-x_p             = np.zeros([number_files,11]) #
-n_e_p           = np.zeros([number_files,11]) # may change , scanning size. 
+#x_p             = np.zeros([number_files,11]) #
+#n_e_p           = np.zeros([number_files,11]) # may change , scanning size. 
 injection_flag  = np.zeros([number_files])
 indi            = np.zeros([number_files])
 ti              = np.zeros([number_files])
@@ -136,7 +136,7 @@ for f in range(number_files):
 
         # get electron spectrum at last timestep
         Emin = 100   #   np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
-        Emax = 1000  #  (E_peak[f]+2*E_fwhm[f])/0.512@                  # me c^2 unit
+        Emax = 800  #  (E_peak[f]+2*E_fwhm[f])/0.512@                  # me c^2 unit
 
         #  only the given the timestep value 
         # laser self-focusing
@@ -179,14 +179,14 @@ for f in range(number_files):
 
 # saving dataframe to changing 2D ndarray to list of array to avoid trouble opening the dataframe 
 
-dict_data = {'x_foc':x_foc, 'c_N2':c_N2, 'phi_centre':phi_centre, 'p_1':p_1, 'p_2':p_2,'x_foc_vac':x_foc_vac,
+dict_data = {'Config':Config,'x_foc':x_foc, 'c_N2':c_N2, 'phi_centre':phi_centre, 'p_1':p_1, 'p_2':p_2,'x_foc_vac':x_foc_vac,
 'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'E_mean':E_mean,'E_med':E_med,'E_std':E_std, 'E_mad':E_mad,
-'E_peak':E_peak,'E_fwhm':E_fwhm,'dQdE_max':dQdE_max,'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'size_x':size_x, div_rms':divergence_rms,
+'E_peak':E_peak,'E_fwhm':E_fwhm,'dQdE_max':dQdE_max,'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'size_x':size_x, 'div_rms':divergence_rms,
 'ener_axis':zeros_vector,'spec':zeros_vector,'x_p':zeros_vector,'n_e_p':zeros_vector}
 
 df = pd.DataFrame(dict_data)
 
-df = df[['x_foc', 'c_N2', 'phi_centre', 'p_1', 'p_2','x_p','n_e_p','x_foc_vac', 'a0_max','x_a0_max',
+df = df[['Config','x_foc', 'c_N2', 'phi_centre', 'p_1', 'p_2','x_p','n_e_p','x_foc_vac', 'a0_max','x_a0_max',
 'injection','t_i','x_i','E_mean','E_med','E_std','E_mad','E_peak','E_fwhm','dQdE_max',
 'q_end','emit_y','emit_z','size_x','div_rms','ener_axis','spec']]
 tmp_e = []
@@ -197,13 +197,13 @@ tmp_ne = []
 for f in range(number_files):
     tmp_e.append(energy_axis[f])
     tmp_s.append(spectrum[f])
-    tmp_x.append(x_p[f])
-    tmp_ne.append(n_e_p[f])
+#    tmp_x.append(x_p[f])
+#    tmp_ne.append(n_e_p[f])
 
 df['ener_axis'] = tmp_e
 df['spec'] = tmp_s
-df['x_p'] = tmp_x
-df['n_e_p'] = tmp_ne
+#df['x_p'] = tmp_x
+#df['n_e_p'] = tmp_ne
 
 
 # saving dataframe to pickle

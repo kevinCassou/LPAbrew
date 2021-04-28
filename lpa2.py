@@ -8,6 +8,7 @@
 ### loading module
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys
+import warnings
 
 try :
     import happi
@@ -490,8 +491,10 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
     
         # compute the full width half maximum using scipy.signal.findpeaks 
         try :
-            prom = (np.nanmax(specData)-np.nanmin(specData))*0.66 #factor might be adjusted 
-            p , _  = find_peaks(specData,prominence=prom)
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore', r'All-NaN slice encountered')
+                prom = (np.nanmax(specData)-np.nanmin(specData))*0.66 #factor might be adjusted 
+                p , _  = find_peaks(specData,prominence=prom)
             if len(p)==0 :
                 Epeak = 0
                 Ewidth = 0
