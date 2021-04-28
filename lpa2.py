@@ -9,7 +9,7 @@
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys
 import warnings
-import statsmodels
+import statsmodels.stats as stats
 
 try :
     import happi
@@ -116,7 +116,7 @@ def weighted_std(data, weights):
     """
     Compute *weighted_standard Deviation* of an array along given axis.
     """    
-    d = statsmodels.stats.weightstats.DescrStatsW(data,weights)
+    d = stats.weightstats.DescrStatsW(data,weights)
 
     return d.std_mean()
 
@@ -124,7 +124,7 @@ def weighted_mean(data, weights):
     """
     Compute *weighted_mean* of an array along given axis.
     """    
-    d = statsmodels.stats.weightstats.DescrStatsW(data,weights)
+    d = stats.weightstats.DescrStatsW(data,weights)
 
     return d.mean()
 
