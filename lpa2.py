@@ -9,6 +9,7 @@
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys
 import warnings
+import statsmodels
 
 try :
     import happi
@@ -80,16 +81,63 @@ def fwhm(x,y):
 def gaussian(x, amp, xcenter, width):
     return amp * np.exp(-(x-xcenter)**2 / width**2)
 
-def mad(a, axis=None):
+def weighted_median(data, weights):
+    """
+    Args:
+      data (list or numpy.array): data
+      weights (list or numpy.array): weights
+    """
+    data, weights = np.array(data).squeeze(), np.array(weights).squeeze()
+    s_data, s_weights = map(np.array, zip(*sorted(zip(data, weights))))
+    midpoint = 0.5 * sum(s_weights)
+    if any(weights > midpoint):
+        w_median = (data[weights == np.max(weights)])[0]
+    else:
+        cs_weights = np.cumsum(s_weights)
+        idx = np.where(cs_weights <= midpoint)[0][-1]
+        if cs_weights[idx] == midpoint:
+            w_median = np.mean(s_data[idx:idx+2])
+        else:
+            w_median = s_data[idx+1]
+    return w_median
+
+def mad(data, axis=None):
     """
     Compute *Median Absolute Deviation* of an array along given axis.
     """
     # Median along given axis, but *keeping* the reduced axis so that
     # result can still broadcast against a.
-    med = np.median(a, axis=axis, keepdims=True)
-    mad = np.median(np.absolute(a - med), axis=axis)  # MAD along given axis
+    med = np.median(data, axis=axis, keepdims=True)
+    mad = np.median(np.absolute(data - med), axis=axis)  # MAD along given axis
 
     return mad
+
+def weighted_std(data, weights):
+    """
+    Compute *weighted_standard Deviation* of an array along given axis.
+    """    
+    d = statsmodels.stats.weightstats.DescrStatsW(data,weights)
+
+    return d.std_mean()
+
+def weighted_mean(data, weights):
+    """
+    Compute *weighted_mean* of an array along given axis.
+    """    
+    d = statsmodels.stats.weightstats.DescrStatsW(data,weights)
+
+    return d.mean()
+
+def weighted_mad(data, weights):
+    """
+    Compute *weighted_Median Absolute Deviation* of an array along given axis.
+    """
+    # Median along given axis, but *keeping* the reduced axis so that
+    # result can still broadcast against a.
+    wmed = weighted_median(data)
+    wmad = weighted_median((np.absolute(data - med), axis=axis)  # MAD along given axis
+
+    return wmad
 
 
 ########## load data with happi ##############################
@@ -290,10 +338,10 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print(" Read \t\t\t\t\t\t",np.size(E)," particles")
                 print( "[0] Iteration = \t\t\t\t\t ",iteration)
                 print( "[1] Simulation time = \t\t\t ",iteration*dt_adim*onel/c*1e15," fs")
-                print( "[2] E_mean = \t\t\t\t\t ",np.mean(E)*0.512," MeV")
-                print( "[3] E_med = \t\t\t\t\t ", np.median(E)*0.512, "MeV")
-                print( "[4] DeltaE_rms / E_mean = \t\t\t", np.std(E)/np.mean(E)*100 , " %.")
-                print( "[5] E_mad /E_med  = \t\t\t\t ",mad(E)/np.median(E)*100, " %.")
+                print( "[2] E_mean = \t\t\t\t\t ",weighted_mean(E)*0.512," MeV")
+                print( "[3] E_med = \t\t\t\t\t ", weighted_median(E)*0.512, "MeV")
+                print( "[4] DeltaE_rms / E_mean = \t\t\t", weighted_std(E)/weighted_mean(E)*100 , " %.")
+                print( "[5] E_mad /E_med  = \t\t\t\t ",weighted_mad(E)/weighted_median(E)*100, " %.")
                 print( "[6] Total charge = \t\t\t\t ", Q, " pC.")
                 print( "[7] Emittance_y = \t\t\t\t",emittancey," mm-mrad")
                 print( "[8] Emittance_z = \t\t\t\t",emittancez," mm-mrad")
@@ -304,20 +352,23 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print( "")
 
             # beam paramater list for iteration timestep
-            vlist = [iteration,                                     # [0] timestep
-            iteration*dt_adim*onel/c*1e15,                          # [1] time [fs]
+           
             if np.max(E) > E_min:
-                np.mean(E)*0.512,                                       # [2] mean energy   [MeV]
-                np.median(E)*0.512,                                     # [3] median value   [MeV]
-                np.std(E)/np.mean(E)*100,                               # [4]% RMS energy spread   [%]
-                mad(E)/np.median(E)*100,                                # [5] mad value [%]
-                Q,                                                      # [6]charge [pC]
+                vlist = [iteration,                                     # [0] timestep
+                iteration*dt_adim*onel/c*1e15,                          # [1] time [fs]
+                weighted_mean(E)*0.512,                                 # [2] weighted mean energy   [MeV]
+                weighted_median(E)*0.512,                               # [3] weighted median value   [MeV]
+                weighted_std(E)/weighted_mean(E)*100,                   # [4] RMS energy spread   [%]
+                weighted_mad(E)/weighted_median(E)*100,                 # [5] MAD value [%]
+                Q,                                                      # [6] charge [pC]
                 emittancey,                                             # [7] emittance [pi.mm.mrad]
                 emittancez,                                             # [8] emittance [pi.mm.mrad]
                 rmssize_longitudinal,                                   # [9] bunch RMS length [um]
                 rmssize_y,                                              # [10] bunch RMS sigy [um]
                 rmssize_z,                                              # [11] bunch RMS sigz [um]
-                divergence_rms*1e3]                                         # [12] RMS divergence [mrad]
+                divergence_rms*1e3]                                     # [12] RMS divergence [mrad]
+            else:
+                vlist = [iteration,iteration*dt_adim*onel/c*1e15,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan]
 
             # save beam parameter in a file
             if save_flag == True:
