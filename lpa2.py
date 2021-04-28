@@ -15,7 +15,9 @@ try :
     import happi
 except ImportError :
     try:
-        execfile("Diagnostics.py")
+        with open("somefile.py") as f:
+            code = compile(f.read(), "Diagnostics.py", 'exec')
+            exec(code)
     except IOError:
         print('copy the Diagnostics.py file from Smilei directory')
     pass
@@ -29,7 +31,7 @@ from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, peak_widths
 import matplotlib.pyplot as plt
 
-############ Inputs ##############################################
+#################### Inputs ##############################################
 
 species_name   = "electronfromion"
 lambda0        = 0.8e-6 # Wavelength of the laser
@@ -46,7 +48,7 @@ chunk_size     = 100000000  #Chunck of particles treated simultaneously
 horiz_axis_conversion_factor = 0.512 # to convert from Smilei units to MeV
 hist_conversion_factor       = 1.    # if equal to 1, the charge is in pC
 
-########## Fundamental Physical constants ########################
+################# Fundamental Physical constants ########################
 eps0   = sc.epsilon_0;  # Electric permittivity of vacuum, F/m
 mu0    = sc.mu_0;       # Magnetic permittivity of vacuum, kg.m.A-2s-2
 e      = sc.e;          # Elementary charge, C
@@ -57,10 +59,10 @@ mp     = sc.m_p;        # Proton mass, kg
 h      = sc.h;          # Planck's constant, J.s
 hbar   = sc.hbar
 
-########## Physical constants ########################
-omega0 = 2*np.pi*c/lambda0
-onel   = lambda0/ (2*np.pi)
-ncrit  = eps0*me*omega0**2/e**2; # critical density (m^-3, not cm^-3)
+########## Physical constants ##########################################
+omega0 = 2*np.pi*c/lambda0          # 
+onel   = lambda0/ (2*np.pi)         # 
+ncrit  = eps0*me*omega0**2/e**2;    # critical density (m^-3, not cm^-3)
 
 
 ######### useful functions #################################### 
@@ -118,7 +120,7 @@ def weighted_std(data, weights):
     """    
     d = stats.weightstats.DescrStatsW(data,weights)
 
-    return d.std_mean()
+    return d.std_mean
 
 def weighted_mean(data, weights):
     """
@@ -126,7 +128,7 @@ def weighted_mean(data, weights):
     """    
     d = stats.weightstats.DescrStatsW(data,weights)
 
-    return d.mean()
+    return d.mean
 
 def weighted_mad(data, weights):
     """
@@ -172,7 +174,6 @@ def getLasera0(S,timeStep,var='Env_E_abs'):
     """
     return np.max(S.Probe(0,var,timeStep).getData()[0])
     
-
 def getLaserWaist(S,timeStep,var='Env_E_abs'):
     """ return the laser waist of Env or field `var` at the iteration
     S : is the simulation output object return by happi.Open()
@@ -343,7 +344,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print( "[6] Total charge = \t\t\t\t ", Q, " pC.")
                 print( "[7] Emittance_y = \t\t\t\t",emittancey," mm-mrad")
                 print( "[8] Emittance_z = \t\t\t\t",emittancez," mm-mrad")
-                print( "[8] size_x = \t\t\t\t",rmssize_longitudinal,"um (RMS)")
+                print( "[8] size_x = \t\t\t\t\t",rmssize_longitudinal,"um (RMS)")
                 print( "[10] divergence_rms = \t\t\t\t",divergence_rms*1e3,"mrad")
                 print( "")
                 print( "--------------------------------------------")
@@ -351,7 +352,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
 
             # beam paramater list for iteration timestep
            
-            if np.max(E) > E_min:
+            if Q > 0.0 :
                 vlist = [iteration,                                     # [0] timestep
                 iteration*dt_adim*onel/c*1e15,                          # [1] time [fs]
                 weighted_mean(E,w)*0.512,                                 # [2] weighted mean energy   [MeV]
@@ -366,6 +367,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 rmssize_z,                                              # [11] bunch RMS sigz [um]
                 divergence_rms*1e3]                                     # [12] RMS divergence [mrad]
             else:
+                print('no data in the filtered energy range')
                 vlist = [iteration,iteration*dt_adim*onel/c*1e15,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan]
 
             # save beam parameter in a file
@@ -420,7 +422,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
 
     # histogram settings,
     normalized     = False
-    nbins_horiz    = 400
+    nbins_horiz    = 200
     
     #  horizontal axis limits (m_e c^2 units, or Lorentz factor)
     horiz_axis_min = E_min  # Max value considered in histogram for the horiz axis, in code units
@@ -469,105 +471,113 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
             print("Total charge after filter in Energy = ",Q," pC")
             print("Filter energy limits: ",E_min,", ",E_max," (m_e c^2)")
 
-        # Compute 1D histogram
-        possible_axes_names =["x","y","z","px","py","pz","E"]
-        axes                =[x,y,z,px,py,pz,E]
+        if Q > 0.0 : 
 
-        if horiz_axis_name in possible_axes_names:
-            horiz_axis = axes[possible_axes_names.index(horiz_axis_name)]
-        else:
-            print("Error, invalid axis")
-            exit(0)
+            # Compute 1D histogram
+            possible_axes_names =["x","y","z","px","py","pz","E"]
+            axes                =[x,y,z,px,py,pz,E]
 
-        hist1D, horiz_edges = np.histogram(horiz_axis, \
-                                       bins=nbins_horiz, \
-                                       range=[horiz_axis_min,horiz_axis_max], weights=w)
-        #print(np.shape(horiz_edges))
-        dhoriz_axis                    = abs(horiz_edges[1]-horiz_edges[0]) # bin size
+            if horiz_axis_name in possible_axes_names:
+                horiz_axis = axes[possible_axes_names.index(horiz_axis_name)]
+            else:
+                print("Error, invalid axis")
+                exit(0)
 
-        # histogram: integrated in dhoriz_axis and gives the total charge
-        histogram_spectrum = hist1D*hist_conversion_factor/dhoriz_axis/horiz_axis_conversion_factor*e * ncrit * onel**3  * 10**(12)
-        if normalized == True:
-            histogram_spectrum = histogram_spectrum / histogram_spectrum[:].max()
+            hist1D, horiz_edges = np.histogram(horiz_axis, \
+                                        bins=nbins_horiz, \
+                                        range=[horiz_axis_min,horiz_axis_max], weights=w)
+            #print(np.shape(horiz_edges))
+            dhoriz_axis                    = abs(horiz_edges[1]-horiz_edges[0]) # bin size
 
-        # horizontal axis 
-        horiz_edges = horiz_edges[0:-1]
-        binx = dhoriz_axis*horiz_axis_conversion_factor
-        horiz_edges = horiz_edges + 0.5*binx
-        energy_axis = horiz_edges*horiz_axis_conversion_factor
+            # histogram: integrated in dhoriz_axis and gives the total charge
+            histogram_spectrum = hist1D*hist_conversion_factor/dhoriz_axis/horiz_axis_conversion_factor*e * ncrit * onel**3  * 10**(12)
+            if normalized == True:
+                histogram_spectrum = histogram_spectrum / histogram_spectrum[:].max()
 
-        # Preparation for Plot
-        if normalized == True:
-            plot_title   = "Normalized histogram"
-        else:
-            plot_title   = 'dQ/d'+horiz_axis_name+" (pC/MeV)"
+            # horizontal axis 
+            horiz_edges = horiz_edges[0:-1]
+            binx = dhoriz_axis*horiz_axis_conversion_factor
+            horiz_edges = horiz_edges + 0.5*binx
+            energy_axis = horiz_edges*horiz_axis_conversion_factor
 
-        #print np.shape(histogram_spectrum)
-        #
-        if print_flag == True:
-            print('Total charge in in the histogram =',np.sum(histogram_spectrum[:])*dhoriz_axis*horiz_axis_conversion_factor,' pC')
-            print('Bins size: dx = ',binx)
+            # Preparation for Plot
+            if normalized == True:
+                plot_title   = "Normalized histogram"
+            else:
+                plot_title   = 'dQ/d'+horiz_axis_name+" (pC/MeV)"
 
-        histogram_spectrum[histogram_spectrum==0.]=float(np.nan)
+            #print np.shape(histogram_spectrum)
+            #
+            if print_flag == True:
+                print('Bins size: dx = ',binx)
 
-        #if print_flag==True:
-        #    print(len(energy_axis))
+            histogram_spectrum[histogram_spectrum==0.]=float(np.nan)
 
-        specData = np.array((histogram_spectrum))
+            #if print_flag==True:
+            #    print(len(energy_axis))
+
+            specData = np.array((histogram_spectrum))
+            
+            # Plot
+            if plot_flag == True:
+                fig = plt.figure()
+                fig.set_facecolor('w')
+
+                plt.xlabel(horiz_axis_name+" (MeV)")
+                plt.title(plot_title)
+
+                #extnt = np.array([horiz_axis.min()*horiz_axis_conversion_factor, \
+                #            horiz_axis.max()*horiz_axis_conversion_factor ])
+                #print("Values extension for ",horiz_axis_name," (all particles):")
+                #print(extnt)
+
+                #extnt = np.array([horiz_axis_min*horiz_axis_conversion_factor, \
+                #            horiz_axis_max*horiz_axis_conversion_factor])
+                #print( "Values extension for ",horiz_axis_name," (particles included in the chosen horiz axis limits):")
+                #print(extnt)
+
+                plt.plot(energy_axis,histogram_spectrum)
+                plt.xlim([horiz_axis_min*horiz_axis_conversion_factor,horiz_axis_max*horiz_axis_conversion_factor])
+                
+                #plt.savefig(homedirectory+"/E_Spectrum.png",format='png')
+                plt.show()
         
-        # Plot
-        if plot_flag == True:
-            fig = plt.figure()
-            fig.set_facecolor('w')
-
-            plt.xlabel(horiz_axis_name+" (MeV)")
-            plt.title(plot_title)
-
-            extnt = np.array([horiz_axis.min()*horiz_axis_conversion_factor, \
-                          horiz_axis.max()*horiz_axis_conversion_factor ])
-            #print("Values extension for ",horiz_axis_name," (all particles):")
-            #print(extnt)
-
-            extnt = np.array([horiz_axis_min*horiz_axis_conversion_factor, \
-                          horiz_axis_max*horiz_axis_conversion_factor])
-            #print( "Values extension for ",horiz_axis_name," (particles included in the chosen horiz axis limits):")
-            #print(extnt)
-
-            plt.plot(energy_axis,histogram_spectrum)
-            plt.xlim([horiz_axis_min*horiz_axis_conversion_factor,horiz_axis_max*horiz_axis_conversion_factor])
+            # compute the full width half maximum using scipy.signal.findpeaks 
+            try :
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('ignore', r'All-NaN slice encountered')
+                    prom = (np.nanmax(specData)-np.nanmin(specData))*0.66 #factor might be adjusted 
+                    p , _  = find_peaks(specData,prominence=prom)
+                if len(p)==0 :
+                    Epeak = 0
+                    Ewidth = 0
+                    dQdE_max = 0
+                else :  
+                    Epeak = energy_axis[p[0]]
+                    dQdE_max = specData[p[0]]
+                    Ewidth = binx*peak_widths(specData, p, rel_height=0.5)[0][0]
+            except:
+                Epeak = np.nan
+                Ewidth = np.nan
+                dQdE_max = np.nan 
+                pass
+                
+            if print_flag == True:
+                print( "")
+                print( "--------------------------------------------")
+                print( "")
+                print("beam Peak energy: \t",Epeak,"MeV")
+                print("beam FWHM energy: \t",Ewidth,"MeV")
+                print( "")
+                print( "--------------------------------------------")
+                print( "")
             
-            #plt.savefig(homedirectory+"/E_Spectrum.png",format='png')
-            plt.show()
-    
-        # compute the full width half maximum using scipy.signal.findpeaks 
-        try :
-            with warnings.catch_warnings():
-                warnings.filterwarnings('ignore', r'All-NaN slice encountered')
-                prom = (np.nanmax(specData)-np.nanmin(specData))*0.66 #factor might be adjusted 
-                p , _  = find_peaks(specData,prominence=prom)
-            if len(p)==0 :
-                Epeak = 0
-                Ewidth = 0
-                dQdE_max = 0
-            else :  
-                Epeak = energy_axis[p[0]]
-                dQdE_max = specData[p[0]]
-                Ewidth = peak_widths(specData, p, rel_height=0.5)[0][0]
-        except:
-            Epeak = np.nan
-            Ewidth = np.nan
-            dQdE_max = np.nan 
-            pass
-            
-        if print_flag == True:
-            print( "")
-            print( "--------------------------------------------")
-            print( "")
-            print("beam Peak energy: \t",Epeak,"MeV")
-            print("beam FWHM energy: \t",Ewidth,"MeV")
-            print( "")
-            print( "--------------------------------------------")
-            print( "")
+            else : 
+                energy_axis = np.nan
+                specData = np.nan
+                Epeak  = np.nan
+                dQdE_max = np.nan
+                Ewidth = np.nan
 
     return energy_axis, specData, Epeak, dQdE_max, Ewidth
 
@@ -596,6 +606,7 @@ def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_si
         Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
         if print_flag==True:  
             print("Total charge before filter in energy= ",Q," pC")
+            print("Filter energy limits: ",E_min,", ",E_max," (m_e c^2)")
         # Apply a filter on energy
         filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0] )
         x            = x[filter]
@@ -608,7 +619,9 @@ def getPartParam(S,iteration,species_name="electronfromion",sort= False,chunk_si
         w            = w[filter]
         p            = p[filter]
         total_weight = w.sum()
-        
+        Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
+        if print_flag==True:  
+            print("Total charge after filter in energy= ",Q," pC")
     return np.array([x,y,z,px,py,pz,E,w,p])
 
 def getPSxrms(S,iteration,species_name="electronfromion",sort= False,chunk_size=100000000,E_min=25, E_max = 520,print_flag = True):
