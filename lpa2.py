@@ -133,8 +133,8 @@ def weighted_mad(data, weights):
     Compute *weighted_Median Absolute Deviation* of an array along given axis.
     """
     wmed = weighted_median(data,weights)
-    wmad = weighted_median((np.absolute(data - wmed),weights)  # MAD along given axis
-
+    wmad = weighted_median(np.absolute(data - wmed),weights)  # MAD along given axis
+    
     return wmad
 
 
