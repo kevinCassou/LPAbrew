@@ -556,11 +556,10 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
                     Epeak = energy_axis[p[0]]
                     dQdE_max = specData[p[0]]
                     Ewidth = binx*peak_widths(specData, p, rel_height=0.5)[0][0]
-            except:
+            except ValueError :
                 Epeak = np.nan
                 Ewidth = np.nan
                 dQdE_max = np.nan 
-                pass
                 
             if print_flag == True:
                 print( "")
@@ -571,13 +570,13 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
                 print( "")
                 print( "--------------------------------------------")
                 print( "")
-            
-            else : 
-                energy_axis = np.nan
-                specData = np.nan
-                Epeak  = np.nan
-                dQdE_max = np.nan
-                Ewidth = np.nan
+        # no charge in the energy range  Q = 0.    
+        else : 
+            energy_axis = np.nan
+            specData = np.nan
+            Epeak  = np.nan
+            dQdE_max = np.nan
+            Ewidth = np.nan
 
     return energy_axis, specData, Epeak, dQdE_max, Ewidth
 
