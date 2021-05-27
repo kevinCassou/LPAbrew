@@ -120,7 +120,7 @@ def weighted_std(data, weights):
     """    
     d = stats.weightstats.DescrStatsW(data,weights)
 
-    return d.std_mean
+    return d.std
 
 def weighted_mean(data, weights):
     """
@@ -259,11 +259,11 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
         p            = np.sqrt((px**2+py**2+pz**2))                # momentum
         E            = np.sqrt((1.+p**2))
         Nparticles   = np.size(w)
-        if print_flag==True:                                  # Number of particles read
+        if print_flag == True:                                  # Number of particles read
             print("Read ",Nparticles," particles from the file")
         total_weight = w.sum()
         Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
-        if print_flag==True:  
+        if print_flag == True:  
             print("Total charge before filter in energy= ",Q," pC")
         # Apply a filter on energy
         filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0] )
@@ -278,7 +278,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
         p            = p[filter]
         total_weight = w.sum()
         Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
-        if print_flag==True:  
+        if print_flag == True:  
             print("Total charge after filter in Energy = ",Q," pC")
             print("Filter energy limits: ",E_min,", ",E_max," (m_e c^2)")
         if total_weight > 0:
@@ -344,7 +344,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print( "[6] Total charge = \t\t\t\t ", Q, " pC.")
                 print( "[7] Emittance_y = \t\t\t\t",emittancey," mm-mrad")
                 print( "[8] Emittance_z = \t\t\t\t",emittancez," mm-mrad")
-                print( "[8] size_x = \t\t\t\t\t",rmssize_longitudinal,"um (RMS)")
+                print( "[8] size_x = \t\t\t\t\t\t",rmssize_longitudinal,"um (RMS)")
                 print( "[10] divergence_rms = \t\t\t\t",divergence_rms*1e3,"mrad")
                 print( "")
                 print( "--------------------------------------------")
@@ -353,31 +353,55 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
             # beam paramater list for iteration timestep
            
             if Q > 0.0 :
-                vlist = [iteration,                                     # [0] timestep
-                iteration*dt_adim*onel/c*1e15,                          # [1] time [fs]
-                weighted_mean(E,w)*0.512,                                 # [2] weighted mean energy   [MeV]
-                weighted_median(E,w)*0.512,                               # [3] weighted median value   [MeV]
-                weighted_std(E,w)/weighted_mean(E,w)*100,                   # [4] RMS energy spread   [%]
-                weighted_mad(E,w)/weighted_median(E,w)*100,                 # [5] MAD value [%]
-                Q,                                                      # [6] charge [pC]
-                emittancey,                                             # [7] emittance [pi.mm.mrad]
-                emittancez,                                             # [8] emittance [pi.mm.mrad]
-                rmssize_longitudinal,                                   # [9] bunch RMS length [um]
-                rmssize_y,                                              # [10] bunch RMS sigy [um]
-                rmssize_z,                                              # [11] bunch RMS sigz [um]
-                divergence_rms*1e3]                                     # [12] RMS divergence [mrad]
+                # [0] timestep
+                # [1] time [fs]
+                # [2] weighted mean energy   [MeV]
+                # [3] weighted median value   [MeV]
+                # [4] RMS energy spread   [%]
+                # [5] MAD value [%]
+                # [6] charge [pC]
+                # [7] emittance [pi.mm.mrad]
+                # [8] emittance [pi.mm.mrad]
+                # [9] bunch RMS length [um]
+                # [10] bunch RMS sigy [um]
+                # [11] bunch RMS sigz [um]
+                # [12] RMS divergence [mrad]
+                beamparam_dict = {"iteration":iteration,
+                "time": iteration*dt_adim*onel/c*1e15,
+                "energy_wmean": weighted_mean(E,w)*0.512,
+                "energy_wmedian": weighted_mad(E,w)/weighted_median(E,w)*100,
+                "energy_wrms": weighted_std(E,w)/weighted_mean(E,w)*100,
+                "energy_wmad": weighted_mad(E,w)/weighted_median(E,w)*100,
+                "charge": Q,
+                "emittancey": emittancey,
+                "emittancez": emittancez,
+                "size_x_rms": rmssize_longitudinal,
+                "size_y_rms" : rmssize_y,
+                "size_z_rms" : rmssize_z,
+                "divergence_rms": divergence_rms*1e3}
             else:
                 print('no data in the filtered energy range')
-                vlist = [iteration,iteration*dt_adim*onel/c*1e15,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan,np.nan]
+                beamparam_dict = {"iteration":iteration,
+                "time": iteration*dt_adim*onel/c*1e15,
+                "energy_wmean": np.nan,
+                "energy_wmedian": np.nan,
+                "energy_wrms": np.nan,
+                "energy_wmad": np.nan,
+                "charge": np.nan,
+                "emittancey": np.nan,
+                "emittancez": np.nan,
+                "size_x_rms": np.nan,
+                "size_y_rms" : np.nan,
+                "size_z_rms" : np.nan,
+                "divergence_rms": np.nan}
 
             # save beam parameter in a file
             if save_flag == True:
-                print( "data saved in cvs file")
-                vdata = np.array(vlist)
-                filename = 'smilei-beamparam'+str(iteration)+'.csv'
+                print( "data saved in npy file")
+                filename = 'smilei-beamparam'+str(iteration)+'.npy'
                 filepath = homedirectory+'/'+filename
-                vdata.tofile(filepath,sep=',',format='%10.5f')
-            return np.array(vlist)
+                np.save(filepath,beamparam_dict)
+            return beamparam_dict
 
 def getPartAvailableSteps(S,species_name="electronfromion",sort = False, chunk_size=10000000):
     """return available timesteps for the trackParticles"""
@@ -388,8 +412,8 @@ def getInjectionTime(S,ts,specie='Rho_electronfromion',threshold = 1e-4,print_fl
     The injection is defined by a threshold on the `electron_from_ion` density
     S : is the simulation output object return by happi.Open()
     ts : timestep vector [numpy array]
-    ti : timestep 
-    xi : longitudinal position 
+    ti : injection timestep 
+    xi : injection longitudinal position [m]
     """ 
     dls = S.namelist.lambda_0/(2*np.pi)
     
