@@ -11,6 +11,7 @@ import pandas as pd
 import scipy.constants as sc
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, peak_widths
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 import lpa2 as l 
 
