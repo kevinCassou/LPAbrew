@@ -15,6 +15,9 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import lpa2 as l 
 
+# Parameters for the postprocessing
+
+nbins = 200
 
 ## get the list of config folder 
 
@@ -59,8 +62,8 @@ E_mean          = np.zeros([number_files])
 E_med           = np.zeros([number_files])
 E_std           = np.zeros([number_files])
 E_mad           = np.zeros([number_files])
-spectrum        = np.zeros([number_files,400])
-energy_axis     = np.zeros([number_files,400])
+spectrum        = np.zeros([number_files,nbins])
+energy_axis     = np.zeros([number_files,nbins])
 q_end           = np.zeros([number_files])
 emittance_y     = np.zeros([number_files])
 emittance_z     = np.zeros([number_files])
@@ -112,16 +115,16 @@ for f in range(number_files):
         "###################################################")
         ti[f] = np.nan
         xi[f] = np.nan
-        E_mean = np.nan
-        E_std = np.nan
+        E_mean[f] = np.nan
+        E_std[f] = np.nan
         E_fwhm[f] = np.nan
         E_peak[f] = np.nan
-        E_med = np.nan
-        E_mad = np.nan
-        dQdE_max        = np.nan
+        E_med[f] = np.nan
+        E_mad[f]  = np.nan
+        dQdE_max[f]   = np.nan
         emittance_y[f] = np.nan
         emittance_z[f] = np.nan
-        spectrum        = np.nan
+        spectrum[f]    = np.nan
         divergence_rms[f] = np.nan
         q_end[f] = np.nan
 
@@ -148,29 +151,29 @@ for f in range(number_files):
         # beam parameter filter around 
         if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
             param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax,print_flag=False)
-            E_mean[f] = param_list[2]
-            E_med[f] = param_list[3]
-            E_std[f] = param_list[4]
-            E_mad[f] = param_list[5]
+            E_mean[f] = param_list['energy_wmean']
+            E_med[f] = param_list['energy_wmed']
+            E_std[f] = param_list['energy_wrms']
+            E_mad[f] = param_list['energy_wmad']
             E_peak[f] = np.nan
             E_fwhm[f] = np.nan
             dQdE_max[f] = spectrum.max()
-            emittance_y[f] = param_list[7]
-            emittance_z[f] = param_list[8]
-            divergence_rms[f] = param_list[12]
-            q_end[f] = param_list[6]
+            emittance_y[f] = param_list['emittancey']
+            emittance_z[f] = param_list['emittancez']
+            divergence_rms[f] = param_list['divergence_rms']
+            q_end[f] = param_list['charge']
 
         else :
 
             param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax ,print_flag=False)
-            E_mean[f] = param_list[2]
-            E_med[f] = param_list[3]
-            E_std[f] = param_list[4]
-            E_mad[f] = param_list[5]
-            emittance_y[f] = param_list[7]
-            emittance_z[f] = param_list[8]
-            divergence_rms[f] = param_list[12]
-            q_end[f] = param_list[6]
+            E_mean[f] = param_list['energy_wmean']
+            E_med[f] = param_list['energy_wmed']
+            E_std[f] = param_list['energy_wrms']
+            E_mad[f] = param_list['energy_wmad']
+            emittance_y[f] = param_list['emittancey']
+            emittance_z[f] = param_list['emittancez']
+            divergence_rms[f] = param_list['divergence_rms']
+            q_end[f] = param_list['charge']
 
 
 # saving dataframe to changing 2D ndarray to list of array to avoid trouble opening the dataframe 

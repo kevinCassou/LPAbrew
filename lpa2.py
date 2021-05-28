@@ -431,22 +431,19 @@ def getInjectionTime(S,ts,specie='Rho_electronfromion',threshold = 1e-4,print_fl
             xi = None
     return t,ti,xi
 
-def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_name= "E", sort = False, chunk_size=100000000,E_min=25, E_max = 520,plot_flag = False, print_flag = False):
+def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_name= "E", E_min=50, E_max = 640,plot_flag = False, print_flag = False, nbins_horiz = 200, normalized = False):
     """ return spectrum plot or data for a given timesteps
     S : smilei output data
     iteration_to_plot : timestep 
     species_name : [electronfromion], electron
     horiz_axis_name : [E] can be px, p or E 
-    E_min : [25] min value considered in histogram for the horiz axis, in code units 
-    E_max : [520] max value considered in histogram for the horiz axis, in code units
-    peakSpectrum : numpy array with peak max energy value and FWHM of the peak. Shape is (len(binX),2) 
+    E_min : [50] min value considered in histogram for the horiz axis, in code units 
+    E_max : [640] max value considered in histogram for the horiz axis, in code units
+    option : plot_flag, print_flag,
+    nbins_horiz : binning energy histogram [200]
+    normalized : normalization of the histogram [False]
     return spectrum data as numpy arrays  (horizontal axis (E, or p)), dQd(E,or p), Epeak, dQdE_max, Ewidth 
     """
-    #global specData
-
-    # histogram settings,
-    normalized     = False
-    nbins_horiz    = 200
     
     #  horizontal axis limits (m_e c^2 units, or Lorentz factor)
     horiz_axis_min = E_min  # Max value considered in histogram for the horiz axis, in code units
@@ -454,7 +451,9 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
     horiz_axis_conversion_factor = 0.512 # to convert from Smilei units to MeV
     hist_conversion_factor       = 1.    # if equal to 1, the charge is in pC
 
-    ########## Read data from Track Particles Diag  
+    ########## Read data from Track Particles Diag #####################
+    sort = False  
+    chunk_size=100000000
     track_part = S.TrackParticles(species = species_name, sort = sort, chunksize=chunk_size)
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
     
