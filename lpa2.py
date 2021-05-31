@@ -9,6 +9,7 @@
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys
 import warnings
+import statsmodels.api
 import statsmodels.stats as stats
 
 try :
@@ -369,7 +370,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 beamparam_dict = {"iteration":iteration,
                 "time": iteration*dt_adim*onel/c*1e15,
                 "energy_wmean": weighted_mean(E,w)*0.512,
-                "energy_wmedian": weighted_mad(E,w)/weighted_median(E,w)*100,
+                "energy_wmedian": weighted_median(E,w)/weighted_median(E,w)*100,
                 "energy_wrms": weighted_std(E,w)/weighted_mean(E,w)*100,
                 "energy_wmad": weighted_mad(E,w)/weighted_median(E,w)*100,
                 "charge": Q,
