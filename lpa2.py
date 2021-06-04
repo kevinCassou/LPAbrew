@@ -328,7 +328,12 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
             rmssize_z =            2*np.sqrt(z2_moy) * onel * 1e6 # [micron]
             divergence_rms = np.sqrt( py2ovpx2 + pz2ovpx2 )
 
-            # width of the peak to be implemented
+            # Statistic on energy distribution of particules
+            E_mean = weighted_mean(E,w)*0.512
+            E_med = weighted_median(E,w)*0.512
+            dE_wrms = weighted_std(E,w)/weighted_mean(E,w)*100
+            dE_rms = np.std(E)/weighted_mean(E,w)*100
+            dE_mad = weighted_mad(E,w)/weighted_median(E,w)*100
 
             # print beam parameter
             if print_flag == True:
@@ -338,10 +343,10 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print(" Read \t\t\t\t\t\t",np.size(E)," particles")
                 print( "[0] Iteration = \t\t\t\t\t ",iteration)
                 print( "[1] Simulation time = \t\t\t ",iteration*dt_adim*onel/c*1e15," fs")
-                print( "[2] E_mean = \t\t\t\t\t ",weighted_mean(E,w)*0.512," MeV")
-                print( "[3] E_med = \t\t\t\t\t ", weighted_median(E,w)*0.512, "MeV")
-                print( "[4] DeltaE_rms / E_mean = \t\t\t", weighted_std(E,w)/weighted_mean(E,w)*100 , " %.")
-                print( "[5] E_mad /E_med  = \t\t\t\t ",weighted_mad(E,w)/weighted_median(E,w)*100, " %.")
+                print( "[2] E_mean = \t\t\t\t\t ",E_mean," MeV")
+                print( "[3] E_med = \t\t\t\t\t ", E_med, "MeV")
+                print( "[4] DeltaE_rms / E_mean = \t\t\t", dE_rms , " %.")
+                print( "[5] E_mad /E_med  = \t\t\t\t ",dE_mad, " %.")
                 print( "[6] Total charge = \t\t\t\t ", Q, " pC.")
                 print( "[7] Emittance_y = \t\t\t\t",emittancey," mm-mrad")
                 print( "[8] Emittance_z = \t\t\t\t",emittancez," mm-mrad")
@@ -369,11 +374,11 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 # [12] RMS divergence [mrad]
                 beamparam_dict = {"iteration":iteration,
                 "time": iteration*dt_adim*onel/c*1e15,
-                "energy_wmean": weighted_mean(E,w)*0.512,
-                "energy_wmedian": weighted_median(E,w)/weighted_median(E,w)*100,
-                "energy_wrms": weighted_std(E,w)/weighted_mean(E,w)*100,
-                "energy_rms": np.std(E)/weighted_mean(E,w)*100,
-                "energy_wmad": weighted_mad(E,w)/weighted_median(E,w)*100,
+                "energy_wmean": E_mean,
+                "energy_wmedian": E_med,
+                "energy_wrms": dE_wrms,
+                "energy_rms": dE_rms,
+                "energy_wmad": dE_mad,
                 "charge": Q,
                 "emittancey": emittancey,
                 "emittancez": emittancez,
@@ -692,8 +697,8 @@ def diag1(path,E_min=100,E_max=800,plot_flag = False):
 
     ### 4 steps between injection and end of the simulation
     t_end = len(ts)
-    period = t_end - tsi[0]
-    t_step = [tsi[0],tsi[0]+int(period/3),tsi[0]+int(2*period/3),t_end-1] 
+    period = t_end - tsi[0]+10
+    t_step = [tsi[0]+10,tsi[0]+10+int(period/3),tsi[0]+10+int(2*period/3),t_end-1] 
     param = []
     ener = []
     spec =[]
@@ -701,15 +706,26 @@ def diag1(path,E_min=100,E_max=800,plot_flag = False):
     dQdEmax =[]
     Ewidht =[]
     pSx = []
+
     print(t_step)
     i = 0 
     for t in t_step:
         print('timeStep=',t_step[i])
-        param = getBeamParam(s,ts[t],E_min=E_min,E_max=E_max)
+        temp0 = getBeamParam(s,ts[t],E_min=E_min,E_max=E_max)
         i = i+1
+        temp1,temp2,temp3,temp4,temp5 = getSpectrum(s,ts[t-1],E_min=E_min,E_max=E_max,plot_flag=False)
+        ener.append(temp1)
+        spec.append(temp2)
+        Epeak.append(temp3)
+        dQdEmax.append(temp4)
+        Ewidht.append(temp5)
+        param.append(temp0)
+
+
+
     
     pSx = getPSxrms(s,ts[-1],E_min=E_min,E_max=E_max,print_flag=False)
-    ener,spec,Epeak,dQdEmax,Ewidht=l.getSpectrum(s,ts[t-1],E_min=E_min,E_max=E_max,plot_flag=False)
+    
 
     if plot_flag == True:
         fig,(ax1,ax2,ax3,ax4) = plt.subplots(4)
@@ -720,7 +736,7 @@ def diag1(path,E_min=100,E_max=800,plot_flag = False):
 
         for t in range(len(t_step)):
             ax2.plot(t_step[t],param[t]['energy_wmean'],label='energy_mean')
-            ax2.plot(t_step[t],param[t]['energy_wmean'],label='energy_median')
+            ax2.plot(t_step[t],param[t]['energy_wmedian'],label='energy_median')
             ax2.plot(t_step[t],param[t]['energy_wmad'],label='energy_mad')
             ax2.plot(t_step[t],param[t]['energy_rms'],label='energy_rms')
             ax2.plot(t_step[t],param[t]['q_end'],label='q')
