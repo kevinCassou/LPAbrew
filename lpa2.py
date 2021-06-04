@@ -696,9 +696,10 @@ def diag1(path,E_min=100,E_max=800,plot_flag = False):
     tsi =   getInjectionTime(s,ts)
 
     ### 4 steps between injection and end of the simulation
-    t_end = len(ts)
-    period = t_end - tsi[0]+10
-    t_step = [tsi[0]+10,tsi[0]+10+int(period/3),tsi[0]+10+int(2*period/3),t_end-1] 
+    t_end = len(ts)-1
+    t_start = tsi[0]+ 5 
+    period = t_end - t_start
+    t_step = [t_start,t_start+int(period/3),t_start+int(2*period/3),t_end] 
     param = []
     ener = []
     spec =[]
