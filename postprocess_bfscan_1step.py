@@ -15,9 +15,10 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import lpa2 as l 
 
-# Parameters for the postprocessing
-
-nbins = 200
+# Parameters to get electron spectrum at last timestep
+Emin = 50.0   #   np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
+Emax = 1000.0  #  (E_peak[f]+2*E_fwhm[f])/0.512@                  # me c^2 unit
+nbins = 200 # number of bins for the histogram default value is 200. 
 
 ## get the list of config folder 
 
@@ -61,6 +62,7 @@ E_fwhm          = np.zeros([number_files])
 E_mean          = np.zeros([number_files])
 E_med           = np.zeros([number_files])
 E_std           = np.zeros([number_files])
+E_wstd          = np.zeros([number_files])
 E_mad           = np.zeros([number_files])
 spectrum        = np.zeros([number_files,nbins])
 energy_axis     = np.zeros([number_files,nbins])
@@ -119,6 +121,7 @@ for f in range(number_files):
         E_std[f] = np.nan
         E_fwhm[f] = np.nan
         E_peak[f] = np.nan
+        E_wstd[f] = np.nan
         E_med[f] = np.nan
         E_mad[f]  = np.nan
         dQdE_max[f]   = np.nan
@@ -135,10 +138,6 @@ for f in range(number_files):
         '#\t  injection occured at:\t',ti[f],' \n',
         "###################################################")
 
-        # get electron spectrum at last timestep
-        Emin = 25   #   np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
-        Emax = 1000  #  (E_peak[f]+2*E_fwhm[f])/0.512@                  # me c^2 unit
-
         #  only the given the timestep value 
         # laser self-focusing
         x,a = l.getMaxinMovingWindow(tmp)
@@ -152,8 +151,9 @@ for f in range(number_files):
         if (E_peak[f] == 0) or (E_fwhm[f] == 0) :
             param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax,print_flag=False)
             E_mean[f] = param_list['energy_wmean']
-            E_med[f] = param_list['energy_wmed']
-            E_std[f] = param_list['energy_wrms']
+            E_med[f] = param_list['energy_wmedian']
+            E_wstd[f] = param_list['energy_wrms']
+            E_std[f] = param_list['energy_rms']
             E_mad[f] = param_list['energy_wmad']
             E_peak[f] = np.nan
             E_fwhm[f] = np.nan
@@ -167,8 +167,9 @@ for f in range(number_files):
 
             param_list = l.getBeamParam(tmp,ts[-1], E_min=Emin, E_max = Emax ,print_flag=False)
             E_mean[f] = param_list['energy_wmean']
-            E_med[f] = param_list['energy_wmed']
-            E_std[f] = param_list['energy_wrms']
+            E_med[f] = param_list['energy_wmedian']
+            E_wstd[f] = param_list['energy_wrms']
+            E_std[f] = param_list['energy_rms']
             E_mad[f] = param_list['energy_wmad']
             emittance_y[f] = param_list['emittancey']
             emittance_z[f] = param_list['emittancez']
@@ -179,7 +180,7 @@ for f in range(number_files):
 # saving dataframe to changing 2D ndarray to list of array to avoid trouble opening the dataframe 
 
 dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac,
-'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'E_mean':E_mean,'E_med':E_med,'E_std':E_std, 'E_mad':E_mad,
+'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'E_mean':E_mean,'E_med':E_med,'E_std':E_std,'E_wstd':E_wstd, 'E_mad':E_mad,
 'E_peak':E_peak,'E_fwhm':E_fwhm,'dQdE_max':dQdE_max,'q_end':q_end,'emit_y':emittance_y,'emit_z':emittance_z,'div_rms':divergence_rms,
 'ener_axis':zeros_vector,'spec':zeros_vector,'x_p':zeros_vector,'n_e_p':zeros_vector}
 

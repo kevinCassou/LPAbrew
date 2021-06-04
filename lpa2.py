@@ -372,6 +372,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 "energy_wmean": weighted_mean(E,w)*0.512,
                 "energy_wmedian": weighted_median(E,w)/weighted_median(E,w)*100,
                 "energy_wrms": weighted_std(E,w)/weighted_mean(E,w)*100,
+                "energy_rms": np.std(E)/weighted_mean(E,w)*100,
                 "energy_wmad": weighted_mad(E,w)/weighted_median(E,w)*100,
                 "charge": Q,
                 "emittancey": emittancey,
@@ -387,6 +388,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 "energy_wmean": np.nan,
                 "energy_wmedian": np.nan,
                 "energy_wrms": np.nan,
+                "energy_rms": np.nan,
                 "energy_wmad": np.nan,
                 "charge": np.nan,
                 "emittancey": np.nan,
@@ -413,6 +415,7 @@ def getInjectionTime(S,ts,specie='Rho_electronfromion',threshold = 1e-4,print_fl
     The injection is defined by a threshold on the `electron_from_ion` density
     S : is the simulation output object return by happi.Open()
     ts : timestep vector [numpy array]
+    t : index of ts at which injection occcurs  
     ti : injection timestep 
     xi : injection longitudinal position [m]
     """ 
@@ -423,9 +426,10 @@ def getInjectionTime(S,ts,specie='Rho_electronfromion',threshold = 1e-4,print_fl
         if np.abs(rhoei.min())> threshold:
             ti = ts[t]
             xi = ts[t]*dls
-            #print('index:', t
-            #print('injection time:',ti,'timestep')
-            #print('injection x:',xi,'mm')
+            if print_flag == True :
+                print('index:', t)
+                print('injection time:',ti,'timestep')
+                print('injection x:',xi,'mm')
             break
         else :
             ti = None
@@ -677,3 +681,57 @@ def getPSxrms(S,iteration,species_name="electronfromion",sort= False,chunk_size=
             print("After filtering",Nparticles," particles")
   
     return np.array([x,px])
+
+####### personalized diags #######
+
+def diag1(path,E_min=100,E_max=800,plot_flag = False):
+    s =     loadData(path)
+    al =    getMaxinMovingWindow(s)
+    ts =    getPartAvailableSteps(s)
+    tsi =   getInjectionTime(s,ts)
+
+    ### 4 steps between injection and end of the simulation
+    t_end = len(ts)
+    period = t_end - tsi[0]
+    t_step = [tsi[0],tsi[0]+int(period/3),tsi[0]+int(2*period/3),t_end-1] 
+    param = []
+    ener = []
+    spec =[]
+    Epeak =[]
+    dQdEmax =[]
+    Ewidht =[]
+    pSx = []
+    print(t_step)
+    i = 0 
+    for t in t_step:
+        print('timeStep=',t_step[i])
+        param = getBeamParam(s,ts[t],E_min=E_min,E_max=E_max)
+        i = i+1
+    
+    pSx = getPSxrms(s,ts[-1],E_min=E_min,E_max=E_max,print_flag=False)
+    ener,spec,Epeak,dQdEmax,Ewidht=l.getSpectrum(s,ts[t-1],E_min=E_min,E_max=E_max,plot_flag=False)
+
+    if plot_flag == True:
+        fig,(ax1,ax2,ax3,ax4) = plt.subplots(4)
+    
+        ax1.plot(al[0,:]*s.namelist.dt,al[1,:],label='a_0')
+        ax1.set_xlabel(r"x [$\lambda_0/2\pi$]")
+        ax1.set_ylabel(r"a_0")
+
+        for t in range(len(t_step)):
+            ax2.plot(t_step[t],param[t]['energy_wmean'],label='energy_mean')
+            ax2.plot(t_step[t],param[t]['energy_wmean'],label='energy_median')
+            ax2.plot(t_step[t],param[t]['energy_wmad'],label='energy_mad')
+            ax2.plot(t_step[t],param[t]['energy_rms'],label='energy_rms')
+            ax2.plot(t_step[t],param[t]['q_end'],label='q')
+            ax2.plot(t_step[t],param[t]['divergence_rms'],label='div_rms')
+        
+        ax3.plot(ener,spec,label = str(t))
+
+
+        ax4.hist2D(pSx[-1][0,:],pSx[-1][1,:],bin=200)
+        ax4.set_xlabel('x')
+        ax4.set_ylabel('px') 
+        
+        fig.tight_layout()
+
