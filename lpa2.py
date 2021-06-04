@@ -713,7 +713,7 @@ def diag1(path,E_min=100,E_max=800,plot_flag = False):
         print('timeStep=',t_step[i])
         temp0 = getBeamParam(s,ts[t],E_min=E_min,E_max=E_max)
         i = i+1
-        temp1,temp2,temp3,temp4,temp5 = getSpectrum(s,ts[t-1],E_min=E_min,E_max=E_max,plot_flag=False)
+        temp1,temp2,temp3,temp4,temp5 = getSpectrum(s,ts[t],E_min=E_min,E_max=E_max,plot_flag=False)
         ener.append(temp1)
         spec.append(temp2)
         Epeak.append(temp3)
