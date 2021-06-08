@@ -685,7 +685,7 @@ def getPSxrms(S,iteration,species_name="electronfromion",sort= False,chunk_size=
         if print_flag==True:                                  # Number of particles read
             print("After filtering",Nparticles," particles")
   
-    return np.array([x,px])
+    return np.array([x,px,w])
 
 ####### personalized diags #######
 
@@ -715,35 +715,38 @@ def diag1(path,E_min=100,E_max=800,plot_flag = False):
         temp0 = getBeamParam(s,ts[t],E_min=E_min,E_max=E_max)
         i = i+1
         temp1,temp2,temp3,temp4,temp5 = getSpectrum(s,ts[t],E_min=E_min,E_max=E_max,plot_flag=False)
+        temp6 = getPSxrms(s,ts[t],E_min=E_min,E_max=E_max,print_flag=False)
         ener.append(temp1)
         spec.append(temp2)
         Epeak.append(temp3)
         dQdEmax.append(temp4)
         Ewidht.append(temp5)
         param.append(temp0)
+        pSx.append(temp6)
 
 
 
     
-    pSx = getPSxrms(s,ts[-1],E_min=E_min,E_max=E_max,print_flag=False)
+    
     
 
-    if plot_flag == True:
-        fig,(ax1,ax2,ax3,ax4) = plt.subplots(4)
+    fig1,ax = plt.subplots(2,2)
     
-        ax1.plot(al[0,:]*s.namelist.dt,al[1,:],label='a_0')
-        ax1.set_xlabel(r"x [$\lambda_0/2\pi$]")
-        ax1.set_ylabel(r"a_0")
+    ax[0,0].plot(al[0,:]*s.namelist.dt,al[1,:],label='a_0')
+    ax[0,0].set_xlabel(r"x [$\lambda_0/2\pi$]")
+    ax[0,0].set_ylabel(r"$a_0$")
 
-        for t in range(len(t_step)):
-            ax2.plot(t_step[t],param[t]['energy_wmean'],label='energy_mean')
-            ax2.plot(t_step[t],param[t]['energy_wmedian'],label='energy_median')
-            ax2.plot(t_step[t],param[t]['energy_wmad'],label='energy_mad')
-            ax2.plot(t_step[t],param[t]['energy_rms'],label='energy_rms')
-            ax2.plot(t_step[t],param[t]['q_end'],label='q')
-            ax2.plot(t_step[t],param[t]['divergence_rms'],label='div_rms')
-        
-        ax3.plot(ener,spec,label = str(t))
+    for t in range(len(t_step)-1):
+        ax[0,1].scatter(ts[t_step[t]],param[t]['energy_wmean'],color='C1',alpha=0.6,label='energy_mean')
+        print(ts[t_step[t]],param[t]['energy_wmean'])
+        ax[0,1].scatter(ts[t_step[t]],param[t]['energy_wmedian'],color='C2',marker='s',alpha=0.6,label='energy_median')
+        ax[1,1].scatter(ts[t_step[t]],param[t]['energy_wmad'],color='C2',marker='s',alpha=0.6,label='energy_mad')
+        ax[1,1].scatter(ts[t_step[t]],param[t]['energy_rms'],color='C1',alpha=0.6,label='energy_rms')
+        ax[1,0].scatter(ts[t_step[t]],param[t]['charge'],color='C3',label='q')
+        ax[1,0].scatter(ts[t_step[t]],param[t]['divergence_rms'],color='C4',label='div_rms')
+
+    ax[0,0].set_xlabel(r"x [$\lambda_0/2\pi$]")
+    ax[0,0].set_ylabel(r"$a_0$")
 
 
         ax4.hist2D(pSx[-1][0,:],pSx[-1][1,:],bin=200)
