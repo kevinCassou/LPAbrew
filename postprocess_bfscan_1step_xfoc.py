@@ -91,7 +91,7 @@ for f in range(number_files):
 
     # read configuration
     Config[f] = tmp.namelist.config_external['Config']
-    a_0[f] = tmp.namelist.config_external['a_0']
+    a_0[f] = tmp.namelist.config_external['as0']
     x_foc[f] = tmp.namelist.config_external['x_foc']
     c_N2[f] = tmp.namelist.config_external['c_N2']
     x_foc_vac[f] = tmp.namelist.xfocus
@@ -149,7 +149,7 @@ for f in range(number_files):
             E_mean[f] = param_list['energy_wmean']
             E_med[f] = param_list['energy_wmedian']
             E_wstd[f] = param_list['energy_wrms']
-            E_std[f] = param_list['energy_rms']
+            E_std[f] = param_list["energy_rms"]
             E_mad[f] = param_list['energy_wmad']
             E_peak[f] = np.nan
             E_fwhm[f] = np.nan
@@ -182,7 +182,7 @@ dict_data = {'Config':Config,'x_foc':x_foc,'c_N2':c_N2,'a_0':a_0, 'x_foc_vac':x_
 
 df = pd.DataFrame(dict_data)
 
-df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_p','n_e_p','x_foc_vac', 'a0_max','x_a0_max',
+df = df[['Config','x_foc','c_N2','x_p','n_e_p','x_foc_vac','a_0','a0_max','x_a0_max',
 'injection','t_i','x_i','E_mean','E_med','E_std','E_mad','E_peak','E_fwhm','dQdE_max',
 'q_end','emit_y','emit_z','div_rms','ener_axis','spec']]
 tmp_e = []
