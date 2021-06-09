@@ -22,7 +22,7 @@ nbins = 200 # number of bins for the histogram default value is 200.
 
 ## get the list of config folder 
 
-rootpath = '/ccc/scratch/cont003/smilei/cassouke/BF-TEST/'
+rootpath = '/ccc/scratch/cont003/smilei/drobniap/BF_TEST_CN2-05_a0-1.15/'
 
 files = list(filter(os.path.isdir, glob.glob(rootpath + "/*/")))
 files.sort(key=lambda x: os.path.getmtime(x))
@@ -35,7 +35,7 @@ timeStep = -1
 
 # for test, comment for postprocessing
 
-number_files = 10
+#number_files = 10
 
 # initialization of arrays 400 is the binning in the histogram energy 
 
@@ -91,7 +91,7 @@ for f in range(number_files):
 
     # read configuration
     Config[f] = tmp.namelist.config_external['Config']
-    a_0[f] = tmp.namelist.config_external['as0']
+    a_0[f] = tmp.namelist.config_external['a0']
     x_foc[f] = tmp.namelist.config_external['x_foc']
     c_N2[f] = tmp.namelist.config_external['c_N2']
     x_foc_vac[f] = tmp.namelist.xfocus
