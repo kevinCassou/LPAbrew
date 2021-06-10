@@ -340,18 +340,18 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print("")
                 print("--------------------------------------------")
                 print("")
-                print(" Read \t\t\t\t\t\t",np.size(E)," particles")
-                print( "[0] Iteration = \t\t\t\t\t ",iteration)
-                print( "[1] Simulation time = \t\t\t ",iteration*dt_adim*onel/c*1e15," fs")
-                print( "[2] E_mean = \t\t\t\t\t ",E_mean," MeV")
+                print(" Read \t\t\t\t\t\t", np.size(E)," particles")
+                print( "[0] Iteration = \t\t\t\t ", iteration)
+                print( "[1] Simulation time = \t\t\t\t ", iteration*dt_adim*onel/c*1e15," fs")
+                print( "[2] E_mean = \t\t\t\t\t ", E_mean," MeV")
                 print( "[3] E_med = \t\t\t\t\t ", E_med, "MeV")
                 print( "[4] DeltaE_rms / E_mean = \t\t\t", dE_rms , " %.")
-                print( "[5] E_mad /E_med  = \t\t\t\t ",dE_mad, " %.")
+                print( "[5] E_mad /E_med  = \t\t\t\t ", dE_mad, " %.")
                 print( "[6] Total charge = \t\t\t\t ", Q, " pC.")
-                print( "[7] Emittance_y = \t\t\t\t",emittancey," mm-mrad")
-                print( "[8] Emittance_z = \t\t\t\t",emittancez," mm-mrad")
-                print( "[8] size_x = \t\t\t\t\t\t",rmssize_longitudinal,"um (RMS)")
-                print( "[10] divergence_rms = \t\t\t\t",divergence_rms*1e3,"mrad")
+                print( "[7] Emittance_y = \t\t\t\t", emittancey," mm-mrad")
+                print( "[8] Emittance_z = \t\t\t\t", emittancez," mm-mrad")
+                print( "[8] size_x = \t\t\t\t\t", rmssize_longitudinal,"um (RMS)")
+                print( "[10] divergence_rms = \t\t\t\t", divergence_rms*1e3,"mrad")
                 print( "")
                 print( "--------------------------------------------")
                 print( "")
@@ -460,6 +460,11 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
     horiz_axis_max = E_max   # Min value considered in histogram for the horiz axis, in code units
     horiz_axis_conversion_factor = 0.512 # to convert from Smilei units to MeV
     hist_conversion_factor       = 1.    # if equal to 1, the charge is in pC
+    energy_axis = np.zeros((1,nbins_horiz)) # initialization to avoid unbondedlocalerror. 
+    specData = np.zeros((1,nbins_horiz))
+    Ewidth = 0.0 
+    Epeak = 0.0 
+    dQdE_max = 0.0
 
     ########## Read data from Track Particles Diag #####################
     sort = False  
