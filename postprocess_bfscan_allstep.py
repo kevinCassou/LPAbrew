@@ -1,5 +1,5 @@
 ##
-# data analysis of BFSCAN 
+## data analysis of BFSCAN 
 ##
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys,glob
@@ -12,7 +12,13 @@ from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, peak_widths
 import matplotlib.pyplot as plt
 import lpa2 as l 
+from tqdm import tqdm
 
+## parameters for postprocessing
+
+nbins = 200 # bining of energy spectrum 
+Emin = 25   #   np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
+Emax = 1000  #  (E_peak[f]+2*E_fwhm[f])/0.512@                  # me c^2 unit 
 
 ## get the list of config folder 
 
@@ -29,7 +35,7 @@ print("Number of configuration : \t", number_files)
 
 start_file = 0
 
-#number_files = 10
+number_files = 10
 
 # initialization of arrays 400 is the binning in the histogram energy 
 
@@ -46,17 +52,31 @@ injection_flag  = np.zeros([number_files])
 indi            = np.zeros([number_files])
 ti              = np.zeros([number_files])
 xi              = np.zeros([number_files])
+zeros_vector    = np.zeros([number_files]) 
 a0_max          = np.zeros([number_files])
 x_a0_max        = np.zeros([number_files])
-zeros_vector    = np.zeros([number_files]) 
-energy_axis     = np.zeros([number_files,400]) # KC: to be changed if limited are adapted to the peak of energy
+
+E_peak          = np.zeros([number_files])
+dQdE_max        = np.zeros([number_files])
+E_fwhm          = np.zeros([number_files])
+E_mean          = np.zeros([number_files])
+E_med           = np.zeros([number_files])
+E_std           = np.zeros([number_files])
+E_wstd          = np.zeros([number_files])
+E_mad           = np.zeros([number_files])
+spectrum        = np.zeros([number_files,nbins]) # KC: to be changed if limited are adapted to the peak of energy
+energy_axis     = np.zeros([number_files,nbins]) # KC: to be changed if limited are adapted to the peak of energy
+q               = np.zeros([number_files])
+emittance_y     = np.zeros([number_files])
+emittance_z     = np.zeros([number_files])
+divergence_rms  = np.zeros([number_files])
 
 print("")
-print("--------------------------------------------")
+print("----------------------------------------------")
 print("")
 print("Post-processing :  all timeStep from injection")
 print("")
-print("--------------------------------------------")
+print("----------------------------------------------")
 print("")
 a0              = []
 x_a             = []
@@ -64,9 +84,13 @@ E_peak          = []
 dQdE_max        = []
 E_fwhm          = []
 E_mean          = []
+E_med           = []
+E_mad           = []
 E_std           = []
+E_wstd          = []
 spectrum        = []
-q_end           = []
+q               = []
+size_x          = []
 emittance_y     = []
 emittance_z     = []
 divergence_rms  = []
@@ -102,10 +126,19 @@ for f in range(number_files):
     ind,ti[f],xi[f] = l.getInjectionTime(tmp,ts)
     indi[f] = int(ind)
 
-    # electron spectrum distribution bining min and max 
-    Emin = 50           # me c^2 unit 
-    Emax = 1000         # me c^2 unit
+    # laser properties in plasma 
+    vec_a0              = np.zeros([vec_len])
+    vec_x_a             = np.zeros([vec_len])
 
+    for t in range(len(ts)):
+            # value and position of the max of a0 
+            vec_a0[t] = l.getLasera0(tmp,ts[t])
+            vec_x_a[t] = ts[t]*tmp.namelist.onel
+    
+    a0.append(vec_a0)
+    x_a.append(vec_x_a)
+    a0_max[f] = np.max(vec_a0)
+    x_a0_max[f] = vec_x_a[vec_a0.argmax()]
    
     #try: # SLK: continue postprocessing even in case of errors:
     #@@@@@@@@@@@@@@@@@@@@@ injection @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -119,26 +152,23 @@ for f in range(number_files):
         print("#####################################\n",
         '#\t  injection occured at:\t',ti[f],' \n',
         "#####################################")
-        print(' DEUBG shape :', vec_len)
-
-        vec_a0              = np.zeros([vec_len])
-        vec_x_a             = np.zeros([vec_len])
+        #print(' DEUBG shape :', vec_len)
         vec_E_peak          = np.zeros([vec_len])
         vec_dQdE_max        = np.zeros([vec_len])
         vec_E_fwhm          = np.zeros([vec_len])
         vec_E_mean          = np.zeros([vec_len])
+        vec_E_med           = np.zeros([vec_len])
         vec_E_std           = np.zeros([vec_len])
-        vec_spectrum        = np.zeros([vec_len,400])
-        vec_q_end           = np.zeros([vec_len])
+        vec_E_mad           = np.zeros([vec_len])
+        vec_spectrum        = np.zeros([vec_len,nbins])
+        vec_q               = np.zeros([vec_len])
+        vec_size_x          = np.zeros([vec_len])
         vec_emittance_y     = np.zeros([vec_len])
         vec_emittance_z     = np.zeros([vec_len])
         vec_divergence_rms  = np.zeros([vec_len])
 
         for t in range(len(tsi)):
             print('file:\t',f,' \t timestep:\t',t)
-            # value and position of the max of a0 
-            vec_a0[t] = l.getLasera0(tmp,tsi[t])
-            vec_x_a[t] = tsi[t]*tmp.namelist.onel
             
             # energy distribution characteristics 
             energy_axis[f], vec_spectrum[t], vec_E_peak[t], vec_dQdE_max[t], vec_E_fwhm[t]  = l.getSpectrum(tmp,tsi[t], E_min=Emin, E_max = Emax, print_flag=False)
@@ -146,57 +176,67 @@ for f in range(number_files):
             # beam parameter filter around energy peak 
             if (vec_E_peak[t] == 0) or (vec_E_fwhm[t] == 0) :
                 try:
-                    param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax,print_flag=False)
-                    #print('DEBUG :\n',param_list)
-                    vec_E_std[t] = param_list[3]
-                    vec_E_peak[t] = np.nan
-                    vec_E_fwhm[t] = np.nan
-                    vec_E_std[t] = param_list[3]
-                    vec_dQdE_max[t] = vec_spectrum.max()
-                    vec_emittance_y[t] = param_list[5]
-                    vec_emittance_z[t] = param_list[6]
-                    vec_divergence_rms[t] = param_list[10]
-                    vec_q_end[t] = param_list[4]
+                    param_dict = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax,print_flag=False)
+                    
+                    vec_E_mean[t]           = param_dict['energy_wmean']
+                    vec_E_med[t]            = param_dict['energy_wmedian']
+                    vec_E_std[t]            = param_dict['energy_rms']
+                    vec_E_mad[t]            = param_dict['energy_wmad']
+                    vec_E_peak[t]           = np.nan
+                    vec_E_fwhm[t]           = np.nan
+                    vec_dQdE_max[t]         = vec_spectrum.max()
+                    vec_emittance_y[t]      = param_dict['emittance_y']
+                    vec_emittance_z[t]      = param_dict['emittance_z']
+                    vec_size_x[t]           =  param_dict['size_x_rms']
+                    vec_divergence_rms[t]   = param_dict['divergence_rms']
+                    vec_q[t]                = param_dict['charge']
                 except TypeError :
+                    vec_E_mean[t] = np.nan
+                    vec_E_med[t] = np.nan
                     vec_E_std[t] = np.nan
+                    vec_E_mad[t] = np.nan
                     vec_E_peak[t] = np.nan
                     vec_E_fwhm[t] = np.nan
                     vec_E_std[t] = np.nan
                     vec_dQdE_max[t] = np.nan
+                    vec_size_x[t] =  np.nan
                     vec_emittance_y[t] = np.nan
                     vec_emittance_z[t] = np.nan
                     vec_divergence_rms[t] = np.nan
-                    vec_q_end[t] = np.nan
+                    vec_q[t] = np.nan
             else :
                 #Emin =  np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
                 #Emax = (E_peak[f]+2*E_fwhm[f])/0.512                  # me c^2 unit
-                param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax ,print_flag=False)
-                #print('DEBUG :\n',param_list)
-                vec_E_mean[t] = param_list[2]
-                vec_E_std[t] = param_list[3]
-                vec_emittance_y[t] = param_list[5]
-                vec_emittance_z[t] = param_list[6]
-                vec_divergence_rms[t] = param_list[10]
-                vec_q_end[t] = param_list[4]
+                param_dict = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax ,print_flag=False)
+                #print('DEBUG :\n',param_dict)
+                vec_E_mean[t] = param_dict['energy_wmean']
+                vec_E_med[t] = param_dict['energy_wmedian']
+                vec_E_std[t] = param_dict['energy_rms']
+                vec_E_mad[t] = param_dict['energy_wmad']
+                vec_dQdE_max[t] = vec_spectrum.max()
+                vec_emittance_y[t] = param_dict['emittance_y']
+                vec_emittance_z[t] = param_dict['emittance_z']
+                vec_size_x[t] =  param_dict['size_x_rms']
+                vec_divergence_rms[t] = param_dict['divergence_rms']
+                vec_q[t] = param_dict['charge']
 
-        a0.append(vec_a0)
-        x_a.append(vec_x_a)
+
         E_peak.append(vec_dQdE_max)
         dQdE_max.append(vec_dQdE_max)
         E_fwhm.append(vec_E_fwhm)
         E_mean.append(vec_E_mean)
+        E_med.append(vec_E_mean)
         E_std.append(vec_E_std)
+        E_mad.append(vec_E_mad)
         spectrum.append(vec_spectrum)
-        q_end.append(vec_q_end)
+        q.append(vec_q)
         emittance_y.append(vec_emittance_y)
         emittance_z.append(vec_emittance_z)
         divergence_rms.append(vec_divergence_rms)
-        a0_max[f] = np.max(vec_a0)
-        x_a0_max[f] = vec_x_a[vec_a0.argmax()]
     
         #print('################# DEBUG ####################')
-        #print("\t q[",f,"]=",q_end[f][0:10],"\n")
-        print("len(q_end)",len(q_end))
+        #print("\t q[",f,"]=",q[f][0:10],"\n")
+        print("len(q)",len(q))
 
     #@@@@@@@@@@@@@@@@@@@@@ no injection @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     else :
@@ -206,19 +246,7 @@ for f in range(number_files):
         "#####################################")
         vec_len = ts.shape[0]
         print(' DEUBG shape :', vec_len)
-        # only a0 is computed
-        vec_a0              = np.zeros([vec_len])
-        vec_x_a             = np.zeros([vec_len])
-        for t in range(len(ts)):
-            # value and position of the max of a0 
-            vec_a0[t] = l.getLasera0(tmp,tsi[t])
-            vec_x_a[t] = tsi[t]*tmp.namelist.onel
-        
-        
-        a0_max[f] = np.max(vec_a0)
-        x_a0_max[f] = vec_x_a[vec_a0.argmax()]
-        a0.append(vec_a0)
-        x_a.append(vec_x_a)
+
         # all other valuees are filled with NaN
         ti[f] = np.nan
         xi[f] = np.nan
@@ -227,12 +255,14 @@ for f in range(number_files):
         E_peak.append(np.nan)
         dQdE_max.append(np.nan)
         E_mean.append(np.nan)
+        E_med.append(np.nan)
+        E_mad.append(np.nan)
         E_std.append(np.nan)
         E_fwhm.append(np.nan)
         emittance_y.append(np.nan)
         emittance_z.append(np.nan)
         divergence_rms.append(np.nan)
-        q_end.append(np.nan)
+        q.append(np.nan)
 
     #except : # SLK:  in case of error fill values with nans and continue the postprocessing
     injection_flag[f] = False
@@ -250,14 +280,14 @@ for f in range(number_files):
 
 dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac,
 'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'a0':a0,'x_a':x_a,'E_mean':zeros_vector,'E_std':zeros_vector,
-'E_peak':zeros_vector,'E_fwhm':zeros_vector,'dQdE_max':zeros_vector,'q_end':zeros_vector,'emit_y':zeros_vector,'emit_z':zeros_vector,'div_rms':zeros_vector,
+'E_peak':zeros_vector,'E_fwhm':zeros_vector,'dQdE_max':zeros_vector,'q':zeros_vector,'emit_y':zeros_vector,'emit_z':zeros_vector,'div_rms':zeros_vector,
 'ener_axis':zeros_vector,'spec':zeros_vector,'x_p':zeros_vector,'n_e_p':zeros_vector}
 
 df = pd.DataFrame(dict_data)
 
 df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_foc_vac', 'a0_max','x_a0_max','injection','t_i','x_i','a0','x_a','x_p','n_e_p',
 'E_mean','E_std','E_peak','E_fwhm','dQdE_max',
-'q_end','emit_y','emit_z','div_rms','ener_axis','spec']]
+'q','emit_y','emit_z','div_rms','ener_axis','spec']]
 
 print('################# DEBUG ####################')
 print("\t size dataframe:",df.shape)
@@ -274,7 +304,7 @@ for f in range(number_files):
     df['E_fwhm'].iloc[f]            = E_fwhm[f].astype(object)
     df['E_mean'].iloc[f]            = E_mean[f].astype(object)
     df['E_std'].iloc[f]             = E_std[f].astype(object)
-    df['q_end'].iloc[f]             = q_end[f].astype(object)
+    df['q'].iloc[f]                 = q[f].astype(object)
     df['emit_y'].iloc[f]            = emittance_y[f].astype(object)
     df['emit_z'].iloc[f]            = emittance_z[f].astype(object)
     df['div_rms'].iloc[f]           = divergence_rms[f].astype(object)

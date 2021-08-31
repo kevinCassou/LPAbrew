@@ -341,16 +341,16 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 print("--------------------------------------------")
                 print("")
                 print(" Read \t\t\t\t\t\t", np.size(E)," particles")
-                print( "[0] Iteration = \t\t\t\t ", iteration)
-                print( "[1] Simulation time = \t\t\t\t ", iteration*dt_adim*onel/c*1e15," fs")
-                print( "[2] E_mean = \t\t\t\t\t ", E_mean," MeV")
-                print( "[3] E_med = \t\t\t\t\t ", E_med, "MeV")
+                print( "[0] Iteration = \t\t\t\t", iteration)
+                print( "[1] Simulation time = \t\t\t\t\t", iteration*dt_adim*onel/c*1e15," fs")
+                print( "[2] E_mean = \t\t\t\t\t", E_mean," MeV")
+                print( "[3] E_med = \t\t\t\t\t", E_med, "MeV")
                 print( "[4] DeltaE_rms / E_mean = \t\t\t", dE_rms , " %.")
-                print( "[5] E_mad /E_med  = \t\t\t\t ", dE_mad, " %.")
-                print( "[6] Total charge = \t\t\t\t ", Q, " pC.")
+                print( "[5] E_mad /E_med  = \t\t\t\t", dE_mad, " %.")
+                print( "[6] Total charge = \t\t\t\t", Q, " pC.")
                 print( "[7] Emittance_y = \t\t\t\t", emittancey," mm-mrad")
                 print( "[8] Emittance_z = \t\t\t\t", emittancez," mm-mrad")
-                print( "[8] size_x = \t\t\t\t\t", rmssize_longitudinal,"um (RMS)")
+                print( "[9] size_x = \t\t\t\t", rmssize_longitudinal,"um (RMS)")
                 print( "[10] divergence_rms = \t\t\t\t", divergence_rms*1e3,"mrad")
                 print( "")
                 print( "--------------------------------------------")
@@ -363,15 +363,16 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 # [1] time [fs]
                 # [2] weighted mean energy   [MeV]
                 # [3] weighted median value   [MeV]
-                # [4] RMS energy spread   [%]
-                # [5] MAD value [%]
-                # [6] charge [pC]
-                # [7] emittance [pi.mm.mrad]
-                # [8] emittance [pi.mm.mrad]
-                # [9] bunch RMS length [um]
-                # [10] bunch RMS sigy [um]
-                # [11] bunch RMS sigz [um]
-                # [12] RMS divergence [mrad]
+                # [4] weighted RMS energy spread   [%]
+                # [5] RMS energy spread   [%]
+                # [6] MAD value [%]
+                # [7] charge [pC]
+                # [8] y-emittance [pi.mm.mrad]
+                # [9] z-emittance [pi.mm.mrad]
+                # [10] bunch RMS length [um]
+                # [11] bunch RMS sigy [um]
+                # [12] bunch RMS sigz [um]
+                # [13] RMS divergence [mrad]
                 beamparam_dict = {"iteration":iteration,
                 "time": iteration*dt_adim*onel/c*1e15,
                 "energy_wmean": E_mean,
@@ -396,8 +397,8 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 "energy_rms": np.nan,
                 "energy_wmad": np.nan,
                 "charge": np.nan,
-                "emittancey": np.nan,
-                "emittancez": np.nan,
+                "emittance_y": np.nan,
+                "emittance_z": np.nan,
                 "size_x_rms": np.nan,
                 "size_y_rms" : np.nan,
                 "size_z_rms" : np.nan,
