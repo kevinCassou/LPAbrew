@@ -59,7 +59,7 @@ def waist0p(EL,IL,tL):
 
 def a0(IL,wL):
     '''laser potential
-    laser intensity: IL 1e18 [W/cm^2]
+    laser intensity: IL [W/cm^2]
     laser wavelength: wL [mum]'''
     return 0.855*np.sqrt((IL/1e18)*wL**2)
 
