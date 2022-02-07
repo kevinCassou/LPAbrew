@@ -4,7 +4,7 @@
 
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys,glob
-sys.append('/users/flc/cassou/src/LPAbrew/')
+sys.path.append('/users/flc/cassou/src/LPAbrew/')
 import numpy as np
 import pandas as pd
 #import matplotlib
@@ -18,9 +18,9 @@ from tqdm import tqdm
 
 ## parameters for postprocessing
 
-nbins = 200 # bining of energy spectrum 
-Emin = 25   #   np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
-Emax = 1000  #  (E_peak[f]+2*E_fwhm[f])/0.512@                  # me c^2 unit 
+nbins = 200     # bining of energy spectrum 
+Emin = 25       # np.max((50),(E_peak[f]-2*E_fwhm[f])/0.512))     # me c^2 unit
+Emax = 1000     # (E_peak[f]+2*E_fwhm[f])/0.512@                  # me c^2 unit 
 
 ## get the list of config folder 
 
@@ -48,7 +48,10 @@ x_foc           = np.zeros([number_files])
 c_N2            = np.zeros([number_files])
 x_foc_vac       = np.zeros([number_files])
 x_p             = np.zeros([number_files,1001]) #
-n_e_p           = np.zeros([number_files,1001]) # may change , scanning size. 
+n_e_p           = np.zeros([number_files,1001]) # may change , scanning size.
+r               = np.zeros([number_files])
+n_e_1           = np.zeros([number_files]) 
+l_1             = np.zeros([number_files])    
 injection_flag  = np.zeros([number_files])
 indi            = np.zeros([number_files])
 ti              = np.zeros([number_files])
@@ -111,6 +114,9 @@ for f in range(number_files):
     Config[f] = tmp.namelist.config_external['Config']
     x_foc[f] = tmp.namelist.config_external['x_foc']
     c_N2[f] = tmp.namelist.config_external['c_N2']
+    r[f] = tmp.namelist.config_external['r']
+    l_1[f] = tmp.namelist.config_external['n_e_1']
+    n_e_1[f] = tmp.namelist.config_external['n_e_1']
     x_foc_vac[f] = tmp.namelist.xfocus
     
     # plasma profile
