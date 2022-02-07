@@ -110,7 +110,7 @@ for f in range(number_files):
     ind,ti[f],xi[f] = l.getInjectionTime(tmp,ts)
     indi[f] = int(ind)
 
-    if ti[f] == None :
+    if (indi[f] == len(ts)-1) | np.isnan(ti[f]) :
         injection_flag[f] = False
         print(" ###################################################\n",
         '#\t no injection \n',
