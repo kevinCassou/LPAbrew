@@ -33,7 +33,7 @@ files = []
 for i in range(len(listsel1_3pc)):
     files.append(rootpath+'Config_'+str(listsel1_3pc[i])+'/')
     print(files[i])
-     
+
 #files = list(filter(os.path.isdir, glob.glob(rootpath + "/*/")))
 #files.sort(key=lambda x: os.path.getmtime(x))
 
@@ -128,8 +128,8 @@ for f in range(number_files):
     x_foc_vac[f] = tmp.namelist.xfocus
     
     # plasma profile
-    x_p[f] = tmp.namelist.x_h_points
-    n_e_p[f] = tmp.namelist.x_h_values
+    x_p[f] = tmp.namelist.xh_points
+    n_e_p[f] = tmp.namelist.xh_values
 
     # timesteps vector
     ts = l.getPartAvailableSteps(tmp)
@@ -140,8 +140,8 @@ for f in range(number_files):
 
     # laser properties in plasma 
     
-    vec_a0              = np.zeros([vec_len])
-    vec_x_a             = np.zeros([vec_len])
+    vec_a0              = np.zeros([len(ts)])
+    vec_x_a             = np.zeros([len(ts)])
 
     for t in range(len(ts)):
             # value and position of the max of a0 
@@ -191,9 +191,9 @@ for f in range(number_files):
             # beam parameter filter around energy peak 
             if (vec_E_peak[t] == 0) or (vec_E_fwhm[t] == 0) :
                 try:
-                    param_dict = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax,print_flag=False)
+                    param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax,print_flag=False)
                     #print('DEBUG :\n',param_list)
-                    vec_E_mean[t] = param_dict['energy_wmean']
+                    vec_E_mean[t] = param_list['energy_wmean']
                     vec_E_med[t] = param_list['energy_wmedian']
                     vec_E_std[t] = param_list['energy_rms']
                     vec_E_mad[t] = param_list['energy_wmad']
@@ -224,7 +224,7 @@ for f in range(number_files):
                 #Emax = (E_peak[f]+2*E_fwhm[f])/0.512                  # me c^2 unit
                 param_list = l.getBeamParam(tmp,tsi[t], E_min=Emin, E_max = Emax ,print_flag=False)
                 #print('DEBUG :\n',param_list)
-                vec_E_mean[t] = param_dict['energy_wmean']
+                vec_E_mean[t] =param_list['energy_wmean']
                 vec_E_med[t] = param_list['energy_wmedian']
                 vec_E_std[t] = param_list['energy_rms']
                 vec_E_mad[t] = param_list['energy_wmad']
