@@ -5,6 +5,7 @@
 from __future__ import (division, print_function, absolute_import,unicode_literals)
 import os,sys,glob
 sys.path.append('/users/flc/cassou/src/LPAbrew/')
+exec(compile(open("/users/flc/cassou/Smilei/scripts/Diagnostics.py").read(), "/users/flc/cassou/Smilei/scripts/Diagnostics.py", 'exec'))
 import numpy as np
 import pandas as pd
 #import matplotlib
@@ -55,8 +56,8 @@ a_0             = np.zeros([number_files])
 x_foc           = np.zeros([number_files])
 c_N2            = np.zeros([number_files])
 x_foc_vac       = np.zeros([number_files])
-x_p             = np.zeros([number_files,1001]) #
-n_e_p           = np.zeros([number_files,1001]) # may change , scanning size.
+x_p             = np.zeros([number_files,11]) #
+n_e_p           = np.zeros([number_files,11]) # may change , scanning size.
 r               = np.zeros([number_files])
 n_e_1           = np.zeros([number_files]) 
 l_1             = np.zeros([number_files])    
@@ -109,7 +110,7 @@ divergence_rms  = []
 
 
 ## scanning the configuration
-for f in range(number_files):
+for f in tqdm(range(number_files)):
     # loading data 
     fnumber =  start_file + f
     print("")
@@ -182,7 +183,7 @@ for f in range(number_files):
         vec_emittance_z     = np.zeros([vec_len])
         vec_divergence_rms  = np.zeros([vec_len])
 
-        for t in range(len(tsi)):
+        for t in tqdm(range(len(tsi)),leeave=False):
             print('file:\t',f,' \t timestep:\t',t)
             
             # energy distribution characteristics 
@@ -200,8 +201,8 @@ for f in range(number_files):
                     vec_E_peak[t] = np.nan
                     vec_E_fwhm[t] = np.nan
                     vec_dQdE_max[t] = vec_spectrum.max()
-                    vec_emittance_y[t] = param_list['emittance_y']
-                    vec_emittance_z[t] = param_list['emittance_z']
+                    vec_emittance_y[t] = param_list['emittancey']
+                    vec_emittance_z[t] = param_list['emittancez']
                     vec_size_x[t] =  param_list['size_x_rms']
                     vec_divergence_rms[t] = param_list['divergence_rms']
                     vec_q[t] = param_list['charge']
@@ -229,8 +230,8 @@ for f in range(number_files):
                 vec_E_std[t] = param_list['energy_rms']
                 vec_E_mad[t] = param_list['energy_wmad']
                 vec_dQdE_max[t] = vec_spectrum.max()
-                vec_emittance_y[t] = param_list['emittance_y']
-                vec_emittance_z[t] = param_list['emittance_z']
+                vec_emittance_y[t] = param_list['emittancey']
+                vec_emittance_z[t] = param_list['emittancez']
                 vec_size_x[t] =  param_list['size_x_rms']
                 vec_divergence_rms[t] = param_list['divergence_rms']
                 vec_q[t] = param_list['charge']
@@ -294,14 +295,17 @@ for f in range(number_files):
 # saving dataframe to changing 2D ndarray to list of array to avoid trouble opening the dataframe 
 
 dict_data = {'Config':Config,'n_e_1':n_e_1, 'r':r, 'l_1':l_1,'x_foc':x_foc,'c_N2':c_N2,'x_foc_vac':x_foc_vac,
-'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'a0':a0,'x_a':x_a,'E_mean':zeros_vector,'E_std':zeros_vector,
-'E_peak':zeros_vector,'E_fwhm':zeros_vector,'dQdE_max':zeros_vector,'q':zeros_vector,'emit_y':zeros_vector,'emit_z':zeros_vector,'div_rms':zeros_vector,
-'ener_axis':zeros_vector,'spec':zeros_vector,'x_p':zeros_vector,'n_e_p':zeros_vector}
+'a0_max':a0_max,'x_a0_max':x_a0_max,'injection':injection_flag,'t_i': ti,'x_i':xi,'a0':a0,'x_a':x_a,
+'E_med':zeros_vector,'E_mad':zeros_vector,'E_mean':zeros_vector,'E_std':zeros_vector,
+'E_peak':zeros_vector,'E_fwhm':zeros_vector,'dQdE_max':zeros_vector,'q':zeros_vector,
+'emit_y':zeros_vector,'emit_z':zeros_vector,'div_rms':zeros_vector,
+'ener_axis':zeros_vector,'spec':zeros_vector,
+'x_p':zeros_vector,'n_e_p':zeros_vector}
 
 df = pd.DataFrame(dict_data)
 
 df = df[['Config','n_e_1', 'r','l_1','x_foc','c_N2','x_foc_vac', 'a0_max','x_a0_max','injection','t_i','x_i','a0','x_a','x_p','n_e_p',
-'E_mean','E_std','E_peak','E_fwhm','dQdE_max',
+'E_med','E_mad','E_mean','E_std','E_peak','E_fwhm','dQdE_max',
 'q','emit_y','emit_z','div_rms','ener_axis','spec']]
 
 print('################# DEBUG ####################')
@@ -317,6 +321,8 @@ for f in range(number_files):
     df['E_peak'].iloc[f]            = E_peak[f].astype(object)
     df['dQdE_max'].iloc[f]          = dQdE_max[f].astype(object)
     df['E_fwhm'].iloc[f]            = E_fwhm[f].astype(object)
+    df['E_med'].iloc[f]             = E_med[f].astype(object)
+    df['E_mad'].iloc[f]             = E_mad[f].astype(object)
     df['E_mean'].iloc[f]            = E_mean[f].astype(object)
     df['E_std'].iloc[f]             = E_std[f].astype(object)
     df['q'].iloc[f]                 = q[f].astype(object)
@@ -325,6 +331,6 @@ for f in range(number_files):
     df['div_rms'].iloc[f]           = divergence_rms[f].astype(object)
             
 # saving dataframe to pickle
-df.to_pickle('dataframe_bfscan.pickle')
+df.to_pickle('dataframe_bfscan.pickle',protocol=4)
 
 print('Post processing Ended')
