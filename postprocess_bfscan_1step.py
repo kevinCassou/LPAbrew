@@ -2,8 +2,10 @@
 # data analysis of BFSCAN 
 ##
 from __future__ import (division, print_function, absolute_import,unicode_literals)
-import os,sys,glob
-import happi
+import sys, glob, os
+sys.path.append('/users/flc/cassou/src/LPAbrew/')
+exec(compile(open("/users/flc/cassou/Smilei/scripts/Diagnostics.py").read(), "/users/flc/cassou/Smilei/scripts/Diagnostics.py", 'exec'))
+
 import numpy as np
 import pandas as pd
 #import matplotlib
@@ -22,7 +24,8 @@ nbins = 200 # number of bins for the histogram default value is 200.
 
 ## get the list of config folder 
 
-rootpath = '/ccc/scratch/cont003/smilei/cassouke/BF-TEST/'
+#rootpath = '/ccc/scratch/cont003/smilei/cassouke/BF-TEST/'
+rootpath = '/silver/PALLAS/simulations/smilei/BF-TEST-CN2-03/'
 
 files = list(filter(os.path.isdir, glob.glob(rootpath + "/*/")))
 files.sort(key=lambda x: os.path.getmtime(x))
@@ -127,7 +130,7 @@ for f in range(number_files):
         dQdE_max[f]   = np.nan
         emittance_y[f] = np.nan
         emittance_z[f] = np.nan
-        spectrum[f]    = np.nan
+        spectrum[f]    = np.nan*np.zeros((nbins))
         divergence_rms[f] = np.nan
         q_end[f] = np.nan
 

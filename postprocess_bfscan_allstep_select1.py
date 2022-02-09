@@ -183,11 +183,11 @@ for f in tqdm(range(number_files)):
         vec_emittance_z     = np.zeros([vec_len])
         vec_divergence_rms  = np.zeros([vec_len])
 
-        for t in tqdm(range(len(tsi)),leeave=False):
+        for t in tqdm(range(len(tsi)),leave=False):
             print('file:\t',f,' \t timestep:\t',t)
             
             # energy distribution characteristics 
-            energy_axis[f], vec_spectrum[t], vec_E_peak[t], vec_dQdE_max[t], vec_E_fwhm[t]  = l.getSpectrum(tmp,tsi[t], E_min=Emin, E_max = Emax, print_flag=False)
+            energy_axis[f], vec_spectrum[t,:], vec_E_peak[t], vec_dQdE_max[t], vec_E_fwhm[t]  = l.getSpectrum(tmp,tsi[t], E_min=Emin, E_max = Emax, print_flag=False)
 
             # beam parameter filter around energy peak 
             if (vec_E_peak[t] == 0) or (vec_E_fwhm[t] == 0) :
@@ -241,7 +241,7 @@ for f in tqdm(range(number_files)):
         dQdE_max.append(vec_dQdE_max)
         E_fwhm.append(vec_E_fwhm)
         E_mean.append(vec_E_mean)
-        E_med.append(vec_E_mean)
+        E_med.append(vec_E_med)
         E_std.append(vec_E_std)
         E_mad.append(vec_E_mad)
         spectrum.append(vec_spectrum)
@@ -266,8 +266,8 @@ for f in tqdm(range(number_files)):
         # all other valuees are filled with NaN
         ti[f] = np.nan
         xi[f] = np.nan
-        energy_axis[f] = np.nan
-        spectrum.append(np.nan)
+        energy_axis[f] = np.nan*np.zeros((nbins))
+        spectrum.append(np.nan*np.zeros((nbins)))
         E_peak.append(np.nan)
         dQdE_max.append(np.nan)
         E_mean.append(np.nan)
