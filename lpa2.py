@@ -611,8 +611,8 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
                 print( "")
         # no charge in the energy range  Q = 0.    
         else : 
-            energy_axis = np.nan
-            specData = np.nan
+            energy_axis = np.nan*np.zeros(nbins_horiz)
+            specData = np.nan*np.zeros(nbins_horiz)
             Epeak  = np.nan
             dQdE_max = np.nan
             Ewidth = np.nan
