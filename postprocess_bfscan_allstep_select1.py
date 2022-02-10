@@ -124,7 +124,7 @@ for f in tqdm(range(number_files)):
     x_foc[f] = tmp.namelist.config_external['x_foc']
     c_N2[f] = tmp.namelist.config_external['c_N2']
     r[f] = tmp.namelist.config_external['r']
-    l_1[f] = tmp.namelist.config_external['n_e_1']
+    l_1[f] = tmp.namelist.config_external['l_1']
     n_e_1[f] = tmp.namelist.config_external['n_e_1']
     x_foc_vac[f] = tmp.namelist.xfocus
     
