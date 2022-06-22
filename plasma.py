@@ -100,7 +100,7 @@ def Pcrit(wL,ne):
     ne : electron plasma density [e-/cm^3]
     Pcrit : laser critical power  [GW]
     '''
-    omegaL = 2*np.pi/(wL*1e-6)
+    omegaL = 2*np.pi*sc.c/(wL*1e-6)
     omegaP = ePulsation(ne)
     return 17.4*(omegaL/omegaP)**2
 
@@ -131,5 +131,5 @@ def Ldep (ne,tL,wL):
     wL : [um]
     ldep in [cm]
     '''
-    return 0.03*tL/(ne*wL**2)
+    return 3e16*tL/(ne*wL**2)
 

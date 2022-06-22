@@ -416,20 +416,21 @@ def getPartAvailableSteps(S,species_name="electronfromion",sort = False, chunk_s
     """return available timesteps for the trackParticles"""
     return S.TrackParticles(species = species_name, sort = False, chunksize=chunk_size).getAvailableTimesteps()
 
-def getInjectionTime(S,ts,specie='Rho_electronfromion',threshold = 1e-4,print_flag = False):
+def getInjectionTime(S,ts,specie='Rho_electronfromion',threshold = 0.1,print_flag = False):
     """ return the injection timestep and longitudinal coordinate of the injection.
     The injection is defined by a threshold on the `electron_from_ion` density
     S : is the simulation output object return by happi.Open()
     ts : timestep vector [numpy array]
-    t : index of ts at which injection occcurs  
+    threshold : value of charge for which injection is considered [pC]
+    t : index of ts at which injection occcurs 
     ti : injection timestep 
     xi : injection longitudinal position [m]
     """ 
     dls = S.namelist.lambda_0/(2*np.pi)
-    
+    th = threshold * 1e-12 /( e * ncrit * (5e-6)**3) # threshold of rho_ei considered on a injection volume of 5um (to be tuned may be) in smilei unit
     for t in range(len(ts)):
         rhoei = S.Probe(0,specie,ts[t]).getData()[0]
-        if np.abs(rhoei.min())> threshold:
+        if np.abs(rhoei.min())> th:
             ti = ts[t]
             xi = ts[t]*dls
             if print_flag == True :
