@@ -437,10 +437,12 @@ def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min
     w  = 0.
     if iteration is None:
         Q = 0.
-        print("Iteration or timeStep is None type, return Q=", Q)
+        if print_flag == True:
+            print("Iteration or timeStep is None type, return Q=", Q)
     elif test_part[int(iteration)]['w'].sum() < 0.1:
         Q = 0.
-        print("no enough particles return Q=", Q)
+        if print_flag == True:
+            print("no enough particles return Q=", Q)
     else:
         for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
             # Read data
@@ -477,11 +479,11 @@ def getInjectionTime2(S,ts,threshold=0.1, species_name="electronfromion",sort = 
     injected_charge = 0.
     t = 0  
     while (t < len(ts)-1) & (injected_charge < threshold) :
-        injected_charge += getBeamCharge(S,ts[t],species_name="electronfromion",sort = False, E_min=10,E_max=520,chunk_size=10000000,print_flag=False)
+        injected_charge += getBeamCharge(S,ts[t],species_name,sort = False, E_min=10,E_max=520,chunk_size=10000000,print_flag=False)
         t+=1
     ti = ts[t] 
     return t, ti, injected_charge
-    
+
 def getInjectionTime(S,ts,probeVar='Rho_electronfromion',threshold = 5e-3,print_flag = False):
     """ return the injection timestep and longitudinal coordinate of the injection.
     The injection is defined by a threshold on the `electron_from_ion` density
