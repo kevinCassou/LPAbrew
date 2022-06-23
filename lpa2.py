@@ -433,6 +433,7 @@ def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min
         Q = 0.
         print("Iteration or timeStep is None type, return Q=",Q) 
     else:
+        print('DEBUG',track_part.iterParticles(iteration, chunksize=chunk_size)) 
         for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
             # Read data
             px           = particle_chunk["px"]
@@ -442,6 +443,8 @@ def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min
             p            = np.sqrt((px**2+py**2+pz**2))
             E            = np.sqrt((1.+p**2))
             Nparticles   = np.size(w)
+            if Nparticles < 1.:
+                Q= 0.
             if print_flag == True:                                  # Number of particles read
                 print("Read ",Nparticles," particles from the file")
             total_weight = w.sum()
