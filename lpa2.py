@@ -431,7 +431,12 @@ def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
     for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
         # Read data
+        px           = particle_chunk["px"]
+        py           = particle_chunk["py"]
+        pz           = particle_chunk["pz"]
         w            = particle_chunk["w"]
+        p            = np.sqrt((px**2+py**2+pz**2))
+        E            = np.sqrt((1.+p**2))
         Nparticles   = np.size(w)
         if print_flag == True:                                  # Number of particles read
             print("Read ",Nparticles," particles from the file")
