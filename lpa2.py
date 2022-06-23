@@ -449,7 +449,7 @@ def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min
             print("Total charge after filter in energy= ",Q," pC")
     return Q
 
-def getInjectionTime(S,ts,probevar='Rho_electronfromion',threshold = 5e-3,print_flag = False):
+def getInjectionTime(S,ts,probeVar='Rho_electronfromion',threshold = 5e-3,print_flag = False):
     """ return the injection timestep and longitudinal coordinate of the injection.
     The injection is defined by a threshold on the `electron_from_ion` density
     S : is the simulation output object return by happi.Open()
