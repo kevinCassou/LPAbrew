@@ -416,7 +416,7 @@ def getPartAvailableSteps(S,species_name="electronfromion",sort = False, chunk_s
     """return available timesteps for the trackParticles"""
     return S.TrackParticles(species = species_name, sort = False, chunksize=chunk_size).getAvailableTimesteps()
 
-def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min=10,E_max=520,chunk_size=100000000,print_flag=True):
+def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min=10,E_max=520,chunk_size=100,print_flag=True):
     """return beam charge for the species_name of the Smilei simulation data at the timestep iteration
     iteration : timestep
     S : is the simulation output object return by happi.Open()
@@ -427,14 +427,17 @@ def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min
     Q : charge []
      """
     ########## Read data from Track Particles Diag ############
-    track_part = S.TrackParticles(species = species_name, sort = sort, chunksize=chunk_size)
+    track_part = S.TrackParticles(species = species_name,timesteps=iteration, sort = sort, chunksize=chunk_size)
+    test_part =  track_part.getData()
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
     if iteration is None:
         Q = 0.
-        print("Iteration or timeStep is None type, return Q=",Q) 
+        print("Iteration or timeStep is None type, return Q=", Q)
+    elif test_part[int(iteration)]['w'].sum() < 1.:
+        Q = 0.
+        print("no enough particles return Q=", Q)
     else:
-        print('DEBUG',track_part.iterParticles(iteration, chunksize=chunk_size)) 
-        for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
+        for particle_chunk in track_part.iterParticles(chunksize=chunk_size):
             # Read data
             px           = particle_chunk["px"]
             py           = particle_chunk["py"]
