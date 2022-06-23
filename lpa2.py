@@ -146,7 +146,7 @@ def weighted_mad(data, weights):
 def loadData(directory=default_directory):
     """loading data in the simulation directory and return an object pointing to the various 
     files, see smilei website"""
-    S = happi.Open(directory, show = False,verbose = False, )
+    S = happi.Open(directory, show = False,verbose = False)
     return S
 
 ######### extract laser var ##############################
@@ -416,21 +416,53 @@ def getPartAvailableSteps(S,species_name="electronfromion",sort = False, chunk_s
     """return available timesteps for the trackParticles"""
     return S.TrackParticles(species = species_name, sort = False, chunksize=chunk_size).getAvailableTimesteps()
 
-def getInjectionTime(S,ts,specie='Rho_electronfromion',threshold = 0.1,print_flag = False):
+def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min=10,E_max=520,chunk_size=100000000,print_flag=True):
+    """return beam charge for the species_name of the Smilei simulation data at the timestep iteration
+    iteration : timestep
+    S : is the simulation output object return by happi.Open()
+    species_name :  [electronfromion], electron
+    E_min :         [10] energy filter min 
+    E_max :         [520] energy filter max
+    printflag :     [True] print output on screen. 
+    Q : charge []
+     """
+    ########## Read data from Track Particles Diag ############
+    track_part = S.TrackParticles(species = species_name, sort = sort, chunksize=chunk_size)
+    #print("Available timesteps = ",track_part.getAvailableTimesteps())
+    for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
+        # Read data
+        w            = particle_chunk["w"]
+        Nparticles   = np.size(w)
+        if print_flag == True:                                  # Number of particles read
+            print("Read ",Nparticles," particles from the file")
+        total_weight = w.sum()
+        Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
+        if print_flag == True:  
+            print("Total charge before filter in energy= ",Q," pC")
+            print("Filter energy limits: ",E_min,", ",E_max," (m_e c^2)")
+        # Apply a filter on energy
+        filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0] )
+        w            = w[filter]
+        total_weight = w.sum()
+        Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
+        if print_flag==True:  
+            print("Total charge after filter in energy= ",Q," pC")
+    return Q
+
+def getInjectionTime(S,ts,probevar='Rho_electronfromion',threshold = 5e-3,print_flag = False):
     """ return the injection timestep and longitudinal coordinate of the injection.
     The injection is defined by a threshold on the `electron_from_ion` density
     S : is the simulation output object return by happi.Open()
     ts : timestep vector [numpy array]
-    threshold : value of charge for which injection is considered [pC]
+    threshold : value of e- from ionisation max density on axis -n_ei/ncrit  [smilei units] 
     t : index of ts at which injection occcurs 
     ti : injection timestep 
     xi : injection longitudinal position [m]
     """ 
     dls = S.namelist.lambda_0/(2*np.pi)
-    th = threshold * 1e-12 /( e * ncrit * (5e-6)**3) # threshold of rho_ei considered on a injection volume of 5um (to be tuned may be) in smilei unit
     for t in range(len(ts)):
-        rhoei = S.Probe(0,specie,ts[t]).getData()[0]
-        if np.abs(rhoei.min())> th:
+        rhoei = S.Probe(0,probeVar,ts[t]).getData()[0]
+        if np.abs(rhoei.min())> threshold:
             ti = ts[t]
             xi = ts[t]*dls
             if print_flag == True :
