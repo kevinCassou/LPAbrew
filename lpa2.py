@@ -429,29 +429,33 @@ def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min
     ########## Read data from Track Particles Diag ############
     track_part = S.TrackParticles(species = species_name, sort = sort, chunksize=chunk_size)
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
-    for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
-        # Read data
-        px           = particle_chunk["px"]
-        py           = particle_chunk["py"]
-        pz           = particle_chunk["pz"]
-        w            = particle_chunk["w"]
-        p            = np.sqrt((px**2+py**2+pz**2))
-        E            = np.sqrt((1.+p**2))
-        Nparticles   = np.size(w)
-        if print_flag == True:                                  # Number of particles read
-            print("Read ",Nparticles," particles from the file")
-        total_weight = w.sum()
-        Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
-        if print_flag == True:  
-            print("Total charge before filter in energy= ",Q," pC")
-            print("Filter energy limits: ",E_min,", ",E_max," (m_e c^2)")
-        # Apply a filter on energy
-        filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0] )
-        w            = w[filter]
-        total_weight = w.sum()
-        Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
-        if print_flag==True:  
-            print("Total charge after filter in energy= ",Q," pC")
+    if iteration is None:
+        Q = 0.
+        print("Iteration or timeStep is None type, return Q=",Q) 
+    else:
+        for particle_chunk in track_part.iterParticles(iteration, chunksize=chunk_size):
+            # Read data
+            px           = particle_chunk["px"]
+            py           = particle_chunk["py"]
+            pz           = particle_chunk["pz"]
+            w            = particle_chunk["w"]
+            p            = np.sqrt((px**2+py**2+pz**2))
+            E            = np.sqrt((1.+p**2))
+            Nparticles   = np.size(w)
+            if print_flag == True:                                  # Number of particles read
+                print("Read ",Nparticles," particles from the file")
+            total_weight = w.sum()
+            Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
+            if print_flag == True:  
+                print("Total charge before filter in energy= ",Q," pC")
+                print("Filter energy limits: ",E_min,", ",E_max," (m_e c^2)")
+            # Apply a filter on energy
+            filter       = np.intersect1d( np.where( E > E_min )[0] ,  np.where( E < E_max )[0] )
+            w            = w[filter]
+            total_weight = w.sum()
+            Q            = total_weight* e * ncrit * onel**3 * 10**(12) # Total charge in pC
+            if print_flag==True:  
+                print("Total charge after filter in energy= ",Q," pC")
     return Q
 
 def getInjectionTime(S,ts,probeVar='Rho_electronfromion',threshold = 5e-3,print_flag = False):
