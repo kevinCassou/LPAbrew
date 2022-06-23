@@ -430,6 +430,10 @@ def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min
     track_part = S.TrackParticles(species = species_name, sort = sort, chunksize=chunk_size)
     test_part =  S.TrackParticles(species = species_name, timesteps=iteration, sort = sort, chunksize=chunk_size).getData()
     #print("Available timesteps = ",track_part.getAvailableTimesteps())
+    px = 0.
+    py = 0.
+    pz = 0.
+    w  = 0.
     if iteration is None:
         Q = 0.
         print("Iteration or timeStep is None type, return Q=", Q)
