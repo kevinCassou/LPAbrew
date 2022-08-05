@@ -5,29 +5,40 @@
 # Source:       Python 3 (python2)
 #####################################################################
 
-### loading module
-from __future__ import (division, print_function, absolute_import,unicode_literals)
-import os,sys
-from re import T
+### loading system module
+from __future__ import (division, print_function, absolute_import, unicode_literals)
+import os, sys
 import warnings
-import statsmodels.api
-import statsmodels.stats as stats
 
+# for execution on local SERA0X computers unit
+host = os.popen('hostname -f').read()[:-1]
+host_list = ['sera01.lal.in2p3.fr','sera03.lal.in2p3.fr','sera03.lal.in2p3.fr','sera04.lal.in2p3.fr']
+if host in host_list:
+    sys.path.append('/silver/PALLAS/simulations/smilei/postprocess/happi/')
+
+# set the current path for happi download path
+module_filename = os.path.basename(__file__)
+module_filepath = __file__
+module_dirpath = module_filepath[:-len(module_filename)]
+os.chdir(module_dirpath)
+
+#print(module_dirpath)
+
+# happi import 
 try :
     import happi
 except ImportError :
     try:
-        with open("somefile.py") as f:
-            code = compile(f.read(), "Diagnostics.py", 'exec')
-            exec(code)
+        os.system('svn checkout https://github.com/SmileiPIC/Smilei.git/trunk/happi/')
+        print('last version of happi has been downloaded with in:', os.path.abspath(module_dirpath))
     except IOError:
-        print('copy the Diagnostics.py file from Smilei directory')
+        print('download the happi module from github: https://github.com/SmileiPIC/Smilei.git and copy it in `lpa2` module directory')
     pass
 
-#sys.path.append('/Users/cassou/Simulations/Smilei/scripts/Diagnostics.py')
+# modules import 
+import statsmodels.api              # necessary to be located before statsmodels.stats import. 
+import statsmodels.stats as stats
 import numpy as np
-#import matplotlib
-#matplotlib.use('Agg')
 import scipy.constants as sc
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks, peak_widths
@@ -38,8 +49,8 @@ import matplotlib.pyplot as plt
 species_name   = "electronfromion"
 lambda0        = 0.8e-6 # Wavelength of the laser
 
-default_directory = "/ccc/scratch/cont003/smilei/cassouke"
-homedirectory     = "/ccc/work/cont003/smilei/cassouke"
+default_directory = os.path.abspath(os.getcwd())
+home_directory     = os.path.expanduser("~")
 
 # used to apply a filter in energy (m_e c^2 units, or Lorentz factor)
 E_min          = 0.
@@ -291,7 +302,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
             #px_moy   = (px   *w).sum() / total_weight
             py_moy   = (py   *w).sum() / total_weight
             pz_moy   = (pz   *w).sum() / total_weight
-            p_moy    = (p    *w).sum() / total_weight
+            # p_moy    = (p    *w).sum() / total_weight
             #Place center of mass at the center of the coordinates
             x  -= x_moy
             y  -= y_moy
@@ -315,11 +326,11 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
             emittancey = ( py2_moy*y2_moy - ypy_moy**2 )
             emittancez = ( pz2_moy*z2_moy - zpz_moy**2 )
             if emittancey > 0:
-                emittancey = np.sqrt(emittancey) * onel * 1e6 # [mm mrad]
+                emittancey = np.sqrt(emittancey) * onel * 1e6 # [um]
             else:
                 emittancey = 0.
             if emittancez > 0:
-                emittancez = np.sqrt(emittancez) * onel * 1e6 # [mm mrad]
+                emittancez = np.sqrt(emittancez) * onel * 1e6 # [um]
             else:
                 emittancez = 0.
                 #emittance_transverse = np.sqrt(emittancey**2+emittancez**2) # [mm mrad]
@@ -409,7 +420,7 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
             if save_flag == True:
                 print( "data saved in npy file")
                 filename = 'smilei-beamparam'+str(iteration)+'.npy'
-                filepath = homedirectory+'/'+filename
+                filepath = home_directory+'/'+filename
                 np.save(filepath,beamparam_dict)
             return beamparam_dict
 
@@ -470,19 +481,6 @@ def getBeamCharge(S,iteration,species_name="electronfromion",sort = False, E_min
         if print_flag==True:  
             print("Total charge after filter in energy= ",Q," pC")
     return Q
-
-
-def getInjectionTime2(S,ts,threshold=0.1, species_name="electronfromion",sort = False, E_min=10,E_max=520,chunk_size=10000000,print_flag=False):
-    """
-    under testing 
-    """
-    injected_charge = 0.
-    t = 0  
-    while (t < len(ts)-1) & (injected_charge < threshold) :
-        injected_charge += getBeamCharge(S,ts[t],species_name,sort = False, E_min=10,E_max=520,chunk_size=10000000,print_flag=False)
-        t+=1
-    ti = ts[t] 
-    return t, ti, injected_charge
 
 def getInjectionTime(S,ts,probeVar='Rho_electronfromion',threshold = 5e-3,print_flag = False):
     """ return the injection timestep and longitudinal coordinate of the injection.
@@ -646,7 +644,7 @@ def getSpectrum(S,iteration_to_plot,species_name= "electronfromion",horiz_axis_n
                 plt.plot(energy_axis,histogram_spectrum)
                 plt.xlim([horiz_axis_min*horiz_axis_conversion_factor,horiz_axis_max*horiz_axis_conversion_factor])
                 
-                #plt.savefig(homedirectory+"/E_Spectrum.png",format='png')
+                #plt.savefig(home_directory+"/E_Spectrum.png",format='png')
                 plt.show()
         
             # compute the full width half maximum using scipy.signal.findpeaks 
@@ -760,7 +758,3 @@ def getPSxrms(S,iteration,species_name="electronfromion",sort= False,chunk_size=
             print("After filtering",Nparticles," particles")
   
     return np.array([x,px,w])
-
-####### personalized diags #######
-
-# to be implemented in a separate python files  
