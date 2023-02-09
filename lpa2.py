@@ -14,7 +14,7 @@ import warnings
 host = os.popen('hostname -f').read()[:-1]
 host_list = ['sera01.lal.in2p3.fr','sera03.lal.in2p3.fr','sera03.lal.in2p3.fr','sera04.lal.in2p3.fr']
 if host in host_list:
-    sys.path.append('/silver/PALLAS/simulations/smilei/postprocess/happi/')
+    sys.path.append('/silver/PALLAS/simulations/smilei/postprocess/')
 
 # set the current path for happi download path
 module_filename = os.path.basename(__file__)
@@ -24,7 +24,7 @@ os.chdir(module_dirpath)
 
 #print(module_dirpath)
 
-# happi import 
+# happi import KC : to be modified to enough to install happi, wrong path  
 try :
     import happi
 except ImportError :
@@ -79,6 +79,7 @@ ncrit  = eps0*me*omega0**2/e**2;    # critical density (m^-3, not cm^-3)
 
 
 ######### useful functions #################################### 
+
 def lin_interp(x, y, i, half):
     return x[i] + (x[i+1] - x[i]) * ((half - y[i]) / (y[i+1] - y[i]))
 
@@ -171,11 +172,8 @@ def getMaxinMovingWindow(S,var="Env_E_abs"):
     """
     # read all timestep Available
     ts = S.Probe(0,var).getTimesteps()
-    varmax = np.zeros((2,len(ts)))
-    for t in range(len(ts)):
-        temp = S.Probe(0,var,ts[t]).getData()[0]
-        varmax[0,t] = ts[t]
-        varmax[1,t] = np.max(temp)
+    data = np.max(S.Prove(0,var).getData(),axis=1)
+    varmax = np.stack((ts,data),axis=0)
     return varmax
 
 def getLasera0(S,timeStep,var='Env_E_abs'):
@@ -322,18 +320,20 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
             py2ovpx2 = (py**2/px**2*w).sum()/total_weight #divergence y squared
             pz2ovpx2 = (pz**2/px**2*w).sum()/total_weight
 
-            # emittances
+            # normalized rms emittances based on Floettmann K. "Some basic features of the beam emittance" PRSTA, vol. 6, 3 (2003) 
+            # https://link.aps.org/doi/10.1103/PhysRevSTAB.6.034202 
+            
+
             emittancey = ( py2_moy*y2_moy - ypy_moy**2 )
             emittancez = ( pz2_moy*z2_moy - zpz_moy**2 )
             if emittancey > 0:
-                emittancey = np.sqrt(emittancey) * onel * 1e6 # [um]
+                emittancey = np.sqrt(emittancey) * onel * 1e6 # [um] 
             else:
                 emittancey = 0.
             if emittancez > 0:
                 emittancez = np.sqrt(emittancez) * onel * 1e6 # [um]
             else:
                 emittancez = 0.
-                #emittance_transverse = np.sqrt(emittancey**2+emittancez**2) # [mm mrad]
 
             rmssize_longitudinal = 2*np.sqrt(x2_moy) * onel * 1e6 # [micron]
             rmssize_y =            2*np.sqrt(y2_moy) * onel * 1e6 # [micron]
@@ -377,10 +377,10 @@ def getBeamParam(S,iteration,species_name="electronfromion",sort = False, E_min=
                 # [3] weighted median value   [MeV]
                 # [4] weighted RMS energy spread   [%]
                 # [5] RMS energy spread   [%]
-                # [6] MAD value [%]
+                # [6] MAD energy spread [%]
                 # [7] charge [pC]
-                # [8] y-emittance [pi.mm.mrad]
-                # [9] z-emittance [pi.mm.mrad]
+                # [8] normalized RMS y-emittance [um]
+                # [9] normalized RMS z-emittance [um]
                 # [10] bunch RMS length [um]
                 # [11] bunch RMS sigy [um]
                 # [12] bunch RMS sigz [um]
